@@ -15,3 +15,4 @@ install/bundles/*.exe
 xel-computation-wallet.jar
 bin/*
 /target/
+/bin/
