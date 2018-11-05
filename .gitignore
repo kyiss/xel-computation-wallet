@@ -1,5 +1,6 @@
 .idea/*
 nxt_db/*
+nxt_test_db/*
 target/*
 logs/nxt*
 logs/xel*
