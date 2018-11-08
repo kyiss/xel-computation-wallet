@@ -18,7 +18,7 @@
     <div id="old_browser_warning" style="display:none;margin-left:auto;margin-right:auto;margin-top:200px;background:white;color:black;padding:20px;width:300px;" data-i18n="old_browser_warning">You are using an old browser which this application does not support.</div>
     <table id="center" style="display:none;width:100%;height:100%;">
         <tr><td style="text-align:center;vertical-align:middle">
-            <img src="img/xelbig.png" alt="XEL" id="logo-nxt-img" />
+            <img src="img/nxt_logo.png" alt="XEL" id="logo-nxt-img" />
 
             <div id="login_panel">
                 <div class="callout callout-danger" id="testnet_login" data-i18n="testnet_login_warning">Log in with your TestNet account - not your real one!</div><div id="login_error" style="max-width:400px;min-width:400px;display:none">
@@ -42,16 +42,16 @@
                         </div>
                         <input type="hidden" name="check_password_length" id="login_check_password_length" value="1" />
                         <div class="input-group" id="login_account_container_other" style="display: none;">
-                            <input type="text" class="form-control purplish" id="login_account_other" name="login_account_other" disabled placeholder="Auto-filled when typing passphrase" data-i18n="[placeholder]your_account"/>
+                            <input type="text" class="form-control" id="login_account_other" name="login_account_other" disabled placeholder="Auto-filled when typing passphrase" data-i18n="[placeholder]your_account"/>
                             <div class="input-group-btn" style="padding-left: 12px !important;padding-top: 45px;" >
                                 <button class="btn btn-flat"onclick="NRS.login(0,$('#login_account_other').val())"><i class="fa fa-arrow-right text-blueish"></i></button>
                             </div>
                         </div>
                         <div class="input-group" style="display:table">
-                            <input type="control_username" class="form-control purplish" id="login_username" name="login_username" style="color: #52bef4 !important" placeholder="Auto-filled when typing passphrase" disabled data-i18n="[placeholder]your_account"/>
+                            <input type="control_username" class="form-control" id="login_username" name="login_username" placeholder="Auto-filled when typing passphrase" disabled data-i18n="[placeholder]your_account"/>
                             <input type="password" autofocus class="form-control" id="login_password" name="login_password" placeholder="Your Passphrase" onchange="NRS.updateAccountField()" onkeypress="NRS.updateAccountField()" autofocus data-i18n="[placeholder]your_passphrase" />
-                            <div class="input-group-btn" style="padding-left: 12px !important;padding-top: 45px;">
-                                <button class="btn btn-flat" onclick="NRS.login(1,$('#login_password').val())"><i class="fa fa-arrow-right text-blueish"></i></button>
+                            <div class="input-group-btn" style="border:1px solid #fff;">
+                                <button class="btn btn-flat" onclick="NRS.login(1,$('#login_password').val())"><i class="fa fa-arrow-right text-muted"></i></button>
                             </div>
                         </div>
                     </div>

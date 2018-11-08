@@ -114,7 +114,6 @@ var NRS = (function(NRS, $, undefined) {
 				$loaded.show();
 
 				PassPhraseGenerator.generatePassPhrase("#account_phrase_generator_panel");
-				
 			}).fail(function() {
 				alert($.t("error_word_list"));
 			});
@@ -123,7 +122,6 @@ var NRS = (function(NRS, $, undefined) {
 			$loaded.show();
 
 			PassPhraseGenerator.generatePassPhrase("#account_phrase_generator_panel");
-			
 		}
 	};
 
@@ -212,10 +210,7 @@ var NRS = (function(NRS, $, undefined) {
 		NRS.accountInfo = {};
 
 		// Reset other functional state
-		$("#account_nr_assets, #account_assets_balance, #account_currencies_balance, #account_nr_currencies, #account_purchase_count, #account_pending_sale_count, #account_completed_sale_count, #account_message_count, #account_alias_count").html("0");
-		$("#account_balance, #account_balance_sidebar").html(NRS.formatStyledAmount(0));
-
-
+		$("#account_balance, #account_balance_sidebar, #account_nr_assets, #account_assets_balance, #account_currencies_balance, #account_nr_currencies, #account_purchase_count, #account_pending_sale_count, #account_completed_sale_count, #account_message_count, #account_alias_count").html("0");
 		$("#id_search").find("input[name=q]").val("");
 		NRS.resetAssetExchangeState();
 		NRS.resetPollsState();
@@ -327,7 +322,6 @@ var NRS = (function(NRS, $, undefined) {
 			", isAccountSwitch = " + isAccountSwitch +
 			", isSavedPassphrase = " + isSavedPassphrase);
         NRS.spinner.spin($("#center")[0]);
-        console.log("Logging in");
         if (isPassphraseLogin && !isSavedPassphrase){
 			var loginCheckPasswordLength = $("#login_check_password_length");
 			
@@ -361,6 +355,7 @@ var NRS = (function(NRS, $, undefined) {
 			
 			loginCheckPasswordLength.val(1);
 		}
+
 		console.log("login calling getBlockchainStatus");
 		NRS.sendRequest("getBlockchainStatus", {}, function(response) {
 			if (response.errorCode) {
@@ -464,6 +459,10 @@ var NRS = (function(NRS, $, undefined) {
 					}
                     $("#sidebar_block_link").html(NRS.getBlockLink(NRS.lastBlockHeight));
 
+                    var canvas_title = CryptoJS.SHA1(String(NRS.account));
+					var cobj = document.getElementById("canvas_hash");
+					cobj.setAttribute("data-jdenticon-hash",canvas_title);
+					this.jdenticon();
 					
 					var passwordNotice = "";
 

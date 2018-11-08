@@ -58,8 +58,9 @@ var NRS = (function(NRS, $) {
 			}
 		});
 	};
-
+	
 	NRS.setup.messages = function() {
+		/*
 		NRS.addTreeviewSidebarMenuItem({
 			"id": 'sidebar_messages',
 			"titleHTML": '<i class="fa fa-envelope"></i> <span data-i18n="messages">Messages</span>',
@@ -72,6 +73,7 @@ var NRS = (function(NRS, $) {
 			"type": 'PAGE',
 			"page": 'messages'
 		});
+		*/
 	};
 
 	NRS.jsondata = NRS.jsondata || {};
