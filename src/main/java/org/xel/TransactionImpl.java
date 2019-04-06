@@ -43,7 +43,7 @@ final class TransactionImpl implements Transaction {
     static final class BuilderImpl implements Builder {
 
         private final short deadline;
-        private byte[] senderPublicKey;
+        private final byte[] senderPublicKey;
         private final long amountNQT;
         private final long feeNQT;
         private final TransactionType type;
@@ -793,7 +793,6 @@ final class TransactionImpl implements Transaction {
                 buffer.putInt(timestamp);
                 buffer.putShort(deadline);
                 buffer.put(getSenderPublicKey());
-
                 buffer.putLong(type.canHaveRecipient() ? recipientId : Genesis.CREATOR_ID);
                 if (useNQT()) {
                     buffer.putLong(amountNQT);
@@ -832,7 +831,7 @@ final class TransactionImpl implements Transaction {
         return bytes;
     }
 
-    static BuilderImpl newTransactionBuilder(byte[] bytes) throws NxtException.NotValidException {
+    static TransactionImpl.BuilderImpl newTransactionBuilder(byte[] bytes) throws NxtException.NotValidException {
         try {
             ByteBuffer buffer = ByteBuffer.wrap(bytes);
             buffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -862,7 +861,7 @@ final class TransactionImpl implements Transaction {
                 ecBlockId = buffer.getLong();
             }
             TransactionType transactionType = TransactionType.findTransactionType(type, subtype);
-            BuilderImpl builder = new BuilderImpl(version, senderPublicKey, amountNQT, feeNQT,
+            TransactionImpl.BuilderImpl builder = new BuilderImpl(version, senderPublicKey, amountNQT, feeNQT,
                     deadline, transactionType.parseAttachment(buffer, version))
                     .timestamp(timestamp)
                     .referencedTransactionFullHash(referencedTransactionFullHash)
@@ -988,9 +987,17 @@ final class TransactionImpl implements Transaction {
         }
     }
 
-    static BuilderImpl newTransactionBuilder(byte[] bytes, JSONObject prunableAttachments) throws NxtException.NotValidException {
+    static TransactionImpl.BuilderImpl newTransactionBuilder(byte[] bytes, JSONObject prunableAttachments) throws NxtException.NotValidException {
         BuilderImpl builder = newTransactionBuilder(bytes);
         if (prunableAttachments != null) {
+            Attachment.TaggedDataUpload taggedDataUpload = Attachment.TaggedDataUpload.parse(prunableAttachments);
+            if (taggedDataUpload != null) {
+                builder.appendix(taggedDataUpload);
+            }
+            Attachment.TaggedDataExtend taggedDataExtend = Attachment.TaggedDataExtend.parse(prunableAttachments);
+            if (taggedDataExtend != null) {
+                builder.appendix(taggedDataExtend);
+            }
             Appendix.PrunablePlainMessage prunablePlainMessage = Appendix.PrunablePlainMessage.parse(prunableAttachments);
             if (prunablePlainMessage != null) {
                 builder.appendix(prunablePlainMessage);
@@ -1102,14 +1109,14 @@ final class TransactionImpl implements Transaction {
 
     static TransactionImpl parseTransaction(JSONObject transactionData) throws NxtException.NotValidException {
         TransactionImpl transaction = newTransactionBuilder(transactionData).build();
-        /*
-        if (transaction.getSignature() != null && !transaction.checkSignature()) {
+
+        // Removed: Transaction Signature Validation is performed upon unconfirmed TX receive and on block-accept. No need to have it inside "parseTransaction"
+        /*if (transaction.getSignature() != null && !transaction.checkSignature()) {
             throw new NxtException.NotValidException("Invalid transaction signature for transaction " + transaction.getJSONObject().toJSONString());
-        }
-        */
+        }*/
         return transaction;
     }
-
+    
     static TransactionImpl parseTransactionComputation(JSONObject transactionData) throws NxtException.NotValidException {
         TransactionImpl transaction = newTransactionBuilder(transactionData).buildComputation(0);
         transaction.getSenderPublicKeyComputational(); // make sure pubkey is restored properly
@@ -1119,7 +1126,7 @@ final class TransactionImpl implements Transaction {
         return transaction;
     }
 
-    static BuilderImpl newTransactionBuilder(JSONObject transactionData) throws NxtException.NotValidException {
+    static TransactionImpl.BuilderImpl newTransactionBuilder(JSONObject transactionData) throws NxtException.NotValidException {
         try {
             byte type = ((Long) transactionData.get("type")).byteValue();
             byte subtype = ((Long) transactionData.get("subtype")).byteValue();
@@ -1144,7 +1151,7 @@ final class TransactionImpl implements Transaction {
             if (transactionType == null) {
                 throw new NxtException.NotValidException("Invalid transaction type: " + type + ", " + subtype);
             }
-            BuilderImpl builder = new BuilderImpl(version, senderPublicKey,
+            TransactionImpl.BuilderImpl builder = new BuilderImpl(version, senderPublicKey,
                     amountNQT, feeNQT, deadline,
                     transactionType.parseAttachment(attachmentData))
                     .timestamp(timestamp)
@@ -1576,7 +1583,6 @@ final class TransactionImpl implements Transaction {
         }
         AccountRestrictions.checkTransaction(this, validatingAtFinish);
     }
-
 
     // returns false iff double spending
     boolean applyUnconfirmed() {

@@ -56,6 +56,7 @@ public final class Redeem extends CreateTransaction {
     }
 
 
+    // TODO: Not required for redeem to help initial bootstrap - Consider removing after the chain is a few blocks long!
     @Override
     protected boolean requireBlockchain() {
         return false;

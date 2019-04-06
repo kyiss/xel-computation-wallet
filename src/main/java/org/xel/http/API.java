@@ -62,18 +62,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-import static org.xel.http.JSONResponses.INCORRECT_ADMIN_PASSWORD;
-import static org.xel.http.JSONResponses.NO_PASSWORD_IN_CONFIG;
-import static org.xel.http.JSONResponses.LOCKED_ADMIN_PASSWORD;
+import static nxt.http.JSONResponses.*;
 
 public final class API {
 
@@ -83,7 +74,8 @@ public final class API {
 
     public static final int openAPIPort;
     public static final int openAPISSLPort;
-    public static final boolean enableHtmlDebugger;
+    public static final boolean isOpenAPI;
+
     public static final List<String> disabledAPIs;
     public static final List<APITag> disabledAPITags;
 
@@ -96,6 +88,7 @@ public final class API {
     static final boolean enableAPIUPnP = Nxt.getBooleanProperty("nxt.enableAPIUPnP");
     public static final int apiServerIdleTimeout = Nxt.getIntProperty("nxt.apiServerIdleTimeout");
     public static final boolean apiServerCORS = Nxt.getBooleanProperty("nxt.apiServerCORS");
+    private static final String forwardedForHeader = Nxt.getStringProperty("nxt.forwardedForHeader");
 
     private static final Server apiServer;
     private static URI welcomePageUri;
@@ -139,7 +132,6 @@ public final class API {
             final int sslPort = Constants.isTestnet ? TESTNET_API_SSLPORT : Nxt.getIntProperty("nxt.apiServerSSLPort");
             final String host = Nxt.getStringProperty("nxt.apiServerHost");
             disableAdminPassword = Nxt.getBooleanProperty("nxt.disableAdminPassword") || ("127.0.0.1".equals(host) && adminPassword.isEmpty());
-            enableHtmlDebugger = Nxt.getBooleanProperty("nxt.enableHtmlDebugger");
 
             apiServer = new Server();
             ServerConnector connector;
@@ -205,6 +197,7 @@ public final class API {
             }
             openAPIPort = !Constants.isLightClient && "0.0.0.0".equals(host) && allowedBotHosts == null && (!enableSSL || port != sslPort) ? port : 0;
             openAPISSLPort = !Constants.isLightClient && "0.0.0.0".equals(host) && allowedBotHosts == null && enableSSL ? sslPort : 0;
+            isOpenAPI = openAPIPort > 0 || openAPISSLPort > 0;
 
             HandlerList apiHandlers = new HandlerList();
 
@@ -233,42 +226,29 @@ public final class API {
                 apiHandlers.addHandler(contextHandler);
             }
 
-            if (enableHtmlDebugger) {
-                ContextHandler contextHandler = new ContextHandler("/debug");
-                ResourceHandler docFileHandler = new ResourceHandler();
-                docFileHandler.setDirectoriesListed(false);
-                docFileHandler.setWelcomeFiles(new String[]{"interface.html"});
-                docFileHandler.setResourceBase("./html/debugger");
-                contextHandler.setHandler(docFileHandler);
-                apiHandlers.addHandler(contextHandler);
-                Logger.logMessage("Enabling HTML Based Test-VM Debugger");
-            }
-
-
             ServletHolder servletHolder = apiHandler.addServlet(APIServlet.class, "/nxt");
             servletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(
-                    null, Math.max(Nxt.getIntProperty("nxt.maxUploadFileSize"), Constants.MAX_UPLOAD_SERVLET_LENGTH), -1L, 0));
+                    null, Math.max(Nxt.getIntProperty("nxt.maxUploadFileSize"), Constants.MAX_TAGGED_DATA_DATA_LENGTH), -1L, 0));
 
             servletHolder = apiHandler.addServlet(APIProxyServlet.class, "/nxt-proxy");
             servletHolder.setInitParameters(Collections.singletonMap("idleTimeout",
                     "" + Math.max(apiServerIdleTimeout - APIProxyServlet.PROXY_IDLE_TIMEOUT_DELTA, 0)));
             servletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(
-                    null, Math.max(Nxt.getIntProperty("nxt.maxUploadFileSize"), Constants.MAX_UPLOAD_SERVLET_LENGTH), -1L, 0));
+                    null, Math.max(Nxt.getIntProperty("nxt.maxUploadFileSize"), Constants.MAX_TAGGED_DATA_DATA_LENGTH), -1L, 0));
             apiHandler.addServlet(ShapeShiftProxyServlet.class, ShapeShiftProxyServlet.SHAPESHIFT_TARGET + "/*");
 
             GzipHandler gzipHandler = new GzipHandler();
-            if (!Nxt.getBooleanProperty("nxt.enableAPIServerGZIPFilter")) {
+            if (!Nxt.getBooleanProperty("nxt.enableAPIServerGZIPFilter", isOpenAPI)) {
                 gzipHandler.setExcludedPaths("/nxt", "/nxt-proxy");
             }
             gzipHandler.setIncludedMethods("GET", "POST");
-            gzipHandler.setMinGzipSize(org.xel.peer.Peers.MIN_COMPRESS_SIZE);
+            gzipHandler.setMinGzipSize(nxt.peer.Peers.MIN_COMPRESS_SIZE);
             apiHandler.setGzipHandler(gzipHandler);
 
             apiHandler.addServlet(APITestServlet.class, "/test");
             apiHandler.addServlet(APITestServlet.class, "/test-proxy");
 
             apiHandler.addServlet(DbShellServlet.class, "/dbshell");
-
 
             if (apiServerCORS) {
                 FilterHolder filterHolder = apiHandler.addFilter(CrossOriginFilter.class, "/*", null);
@@ -318,7 +298,7 @@ public final class API {
             disableAdminPassword = false;
             openAPIPort = 0;
             openAPISSLPort = 0;
-            enableHtmlDebugger = false;
+            isOpenAPI = false;
             Logger.logMessage("API server not enabled");
         }
 
@@ -379,22 +359,39 @@ public final class API {
 
     private static void checkOrLockPassword(HttpServletRequest req) throws ParameterException {
         int now = Nxt.getEpochTime();
-        String remoteHost = req.getRemoteHost();
+        String remoteHost = null;
+        if (forwardedForHeader != null) {
+            remoteHost = req.getHeader(forwardedForHeader);
+        }
+        if (remoteHost == null) {
+            remoteHost = req.getRemoteHost();
+        }
         synchronized(incorrectPasswords) {
             PasswordCount passwordCount = incorrectPasswords.get(remoteHost);
-            if (passwordCount != null && passwordCount.count >= 3 && now - passwordCount.time < 60*60) {
+            if (passwordCount != null && passwordCount.count >= 25 && now - passwordCount.time < 60*60) {
                 Logger.logWarningMessage("Too many incorrect admin password attempts from " + remoteHost);
                 throw new ParameterException(LOCKED_ADMIN_PASSWORD);
             }
-            if (!API.adminPassword.equals(req.getParameter("adminPassword"))) {
-                if (passwordCount == null) {
-                    passwordCount = new PasswordCount();
-                    incorrectPasswords.put(remoteHost, passwordCount);
+            String adminPassword = Convert.nullToEmpty(req.getParameter("adminPassword"));
+            if (!API.adminPassword.equals(adminPassword)) {
+                if (adminPassword.length() > 0) {
+                    if (passwordCount == null) {
+                        passwordCount = new PasswordCount();
+                        incorrectPasswords.put(remoteHost, passwordCount);
+                        if (incorrectPasswords.size() > 1000) {
+                            // Remove one of the locked hosts at random to prevent unlimited growth of the map
+                            List<String> remoteHosts = new ArrayList<>(incorrectPasswords.keySet());
+                            Random r = new Random();
+                            incorrectPasswords.remove(remoteHosts.get(r.nextInt(remoteHosts.size())));
+                        }
+                    }
+                    passwordCount.count++;
+                    passwordCount.time = now;
+                    Logger.logWarningMessage("Incorrect adminPassword from " + remoteHost);
+                    throw new ParameterException(INCORRECT_ADMIN_PASSWORD);
+                } else {
+                    throw new ParameterException(MISSING_ADMIN_PASSWORD);
                 }
-                passwordCount.count++;
-                passwordCount.time = now;
-                Logger.logWarningMessage("Incorrect adminPassword from " + remoteHost);
-                throw new ParameterException(INCORRECT_ADMIN_PASSWORD);
             }
             if (passwordCount != null) {
                 incorrectPasswords.remove(remoteHost);

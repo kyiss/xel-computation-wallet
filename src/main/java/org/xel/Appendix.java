@@ -300,7 +300,7 @@ public interface Appendix {
         }
 
         @Override
-        public void putMyJSON(JSONObject json) {
+        void putMyJSON(JSONObject json) {
             json.put("message", Convert.toString(message, isText));
             json.put("messageIsText", isText);
         }
@@ -316,8 +316,6 @@ public interface Appendix {
                 throw new NxtException.NotValidException("Invalid arbitrary message length: " + message.length);
             }
         }
-
-
 
         @Override
         void apply(Transaction transaction, Account senderAccount, Account recipientAccount) {}
@@ -342,7 +340,7 @@ public interface Appendix {
 
     }
 
-    class PrunablePlainMessage extends AbstractAppendix implements Prunable {
+    class PrunablePlainMessage extends Appendix.AbstractAppendix implements Prunable {
 
         private static final String appendixName = "PrunablePlainMessage";
 
@@ -432,7 +430,7 @@ public interface Appendix {
         }
 
         @Override
-        public void putMyJSON(JSONObject json) {
+        void putMyJSON(JSONObject json) {
             if (prunableMessage != null) {
                 json.put("message", Convert.toString(prunableMessage.getMessage(), prunableMessage.messageIsText()));
                 json.put("messageIsText", prunableMessage.messageIsText());

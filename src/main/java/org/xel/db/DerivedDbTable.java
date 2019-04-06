@@ -18,7 +18,6 @@ package org.xel.db;
 
 import org.xel.Db;
 import org.xel.Nxt;
-import org.xel.util.Logger;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -41,8 +40,6 @@ public abstract class DerivedDbTable {
         if (!db.isInTransaction()) {
             throw new IllegalStateException("Not in transaction");
         }
-
-        Logger.logDebugMessage("Rolling back table " + toString() + " to height " + height);
         try (Connection con = db.getConnection();
              PreparedStatement pstmtDelete = con.prepareStatement("DELETE FROM " + table + " WHERE height > ?")) {
             pstmtDelete.setInt(1, height);

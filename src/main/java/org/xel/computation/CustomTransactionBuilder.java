@@ -1,15 +1,17 @@
 package org.xel.computation;
 
-import org.xel.*;
+import static org.xel.computation.ComputationConstants.WORK_MESSAGE_RECEIVER_ACCOUNT;
+
+import org.json.simple.JSONObject;
+import org.json.simple.JSONStreamAware;
+import org.xel.Appendix;
+import org.xel.Attachment;
+import org.xel.Nxt;
+import org.xel.NxtException;
+import org.xel.Transaction;
 import org.xel.crypto.Crypto;
 import org.xel.http.JSONData;
 import org.xel.util.Convert;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONStreamAware;
-
-import static org.xel.computation.ComputationConstants.WORK_MESSAGE_RECEIVER_ACCOUNT;
-import static org.xel.http.JSONResponses.*;
-import static org.xel.http.JSONResponses.FEATURE_NOT_AVAILABLE;
 
 /******************************************************************************
  * Copyright © 2017 The XEL Core Developers.                                  *

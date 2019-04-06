@@ -87,7 +87,7 @@ final class BlockImpl implements Block {
         this.version = version;
         this.timestamp = timestamp;
         this.previousBlockId = previousBlockId;
-        if (this.previousBlockId == 0)
+        if(this.previousBlockId==0)
             this.height = 0;
 
         this.totalAmountNQT = totalAmountNQT;
@@ -304,7 +304,7 @@ final class BlockImpl implements Block {
                 throw new IllegalStateException("Block is not signed yet");
             }
             byte[] hash = Crypto.sha256().digest(bytes());
-            BigInteger bigInteger = new BigInteger(1, new byte[]{hash[7], hash[6], hash[5], hash[4], hash[3], hash[2], hash[1], hash[0]});
+            BigInteger bigInteger = new BigInteger(1, new byte[] {hash[7], hash[6], hash[5], hash[4], hash[3], hash[2], hash[1], hash[0]});
             id = bigInteger.longValue();
             stringId = bigInteger.toString();
         }
@@ -332,12 +332,12 @@ final class BlockImpl implements Block {
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof BlockImpl && this.getId() == ((BlockImpl) o).getId();
+        return o instanceof BlockImpl && this.getId() == ((BlockImpl)o).getId();
     }
 
     @Override
     public int hashCode() {
-        return (int) (getId() ^ (getId() >>> 32));
+        return (int)(getId() ^ (getId() >>> 32));
     }
 
     @Override
@@ -433,7 +433,7 @@ final class BlockImpl implements Block {
                 throw new NxtException.NotValidException("Invalid block signature");
             }
             return block;
-        } catch (NxtException.NotValidException | RuntimeException e) {
+        } catch (NxtException.NotValidException|RuntimeException e) {
             Logger.logDebugMessage("Failed to parse block: " + blockData.toJSONString());
             throw e;
         }
@@ -520,13 +520,12 @@ final class BlockImpl implements Block {
     private volatile boolean hasValidSignature = false;
 
     private boolean checkSignature() {
-        if (!hasValidSignature) {
+        if (! hasValidSignature) {
             byte[] data = Arrays.copyOf(bytes(), bytes.length - 64);
             hasValidSignature = blockSignature != null && Crypto.verify(blockSignature, data, getGeneratorPublicKey(), version >= 3);
         }
         return hasValidSignature;
     }
-
 
     boolean verifyGenerationSignature() throws BlockchainProcessor.BlockOutOfOrderException {
 
@@ -618,10 +617,9 @@ final class BlockImpl implements Block {
 
     }
 
-    private static final long[] badBlocks = new long[]{
+    private static final long[] badBlocks = new long[] {
             5113090348579089956L, 8032405266942971936L, 7702042872885598917L, -407022268390237559L, -3320029330888410250L,
             -6568770202903512165L, 4288642518741472722L, 5315076199486616536L, -6175599071600228543L};
-
     static {
         Arrays.sort(badBlocks);
     }

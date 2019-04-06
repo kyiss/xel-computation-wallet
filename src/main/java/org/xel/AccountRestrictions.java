@@ -16,9 +16,16 @@
 
 package org.xel;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Map;
+
 import org.xel.Account.ControlType;
 import org.xel.NxtException.AccountControlException;
 import org.xel.VoteWeighting.VotingModel;
+import org.xel.db.DbClause;
 import org.xel.db.DbIterator;
 import org.xel.db.DbKey;
 import org.xel.db.DbUtils;
@@ -26,18 +33,13 @@ import org.xel.db.VersionedEntityDbTable;
 import org.xel.util.Convert;
 import org.xel.util.Logger;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Map;
-
 public final class AccountRestrictions {
 
     public static final class PhasingOnly {
 
         public static PhasingOnly get(long accountId) {
-            return phasingControlTable.get(phasingControlDbKeyFactory.newKey(accountId));
+            return phasingControlTable.getBy(new DbClause.LongClause("account_id", accountId).
+                    and(new DbClause.ByteClause("voting_model", DbClause.Op.NE, VotingModel.NONE.getCode())));
         }
 
         public static int getCount() {
@@ -54,7 +56,9 @@ public final class AccountRestrictions {
                 //no voting - remove the control
                 senderAccount.removeControl(ControlType.PHASING_ONLY);
                 PhasingOnly phasingOnly = get(senderAccount.getId());
+                phasingOnly.phasingParams = phasingParams;
                 phasingControlTable.delete(phasingOnly);
+                unset(senderAccount);
             } else {
                 senderAccount.addControl(ControlType.PHASING_ONLY);
                 PhasingOnly phasingOnly = get(senderAccount.getId());
@@ -69,6 +73,12 @@ public final class AccountRestrictions {
                 }
                 phasingControlTable.insert(phasingOnly);
             }
+        }
+
+        static void unset(Account account) {
+            account.removeControl(ControlType.PHASING_ONLY);
+            PhasingOnly phasingOnly = get(account.getId());
+            phasingControlTable.delete(phasingOnly);
         }
 
         private final DbKey dbKey;
@@ -122,9 +132,9 @@ public final class AccountRestrictions {
             return maxDuration;
         }
 
-        private void checkTransaction(Transaction transaction, boolean validatingAtFinish) throws AccountControlException {
-            if (!validatingAtFinish && maxFees > 0 && Math.addExact(transaction.getFeeNQT(), PhasingPoll.getSenderPhasedTransactionFees(transaction.getSenderId())) > maxFees) {
-                throw new AccountControlException(String.format("Maximum total fees limit of %f XEL exceeded", ((double)maxFees)/Constants.ONE_NXT));
+        private void checkTransaction(Transaction transaction) throws AccountControlException {
+            if (maxFees > 0 && Math.addExact(transaction.getFeeNQT(), PhasingPoll.getSenderPhasedTransactionFees(transaction.getSenderId())) > maxFees) {
+                throw new AccountControlException(String.format("Maximum total fees limit of %f %s exceeded", ((double)maxFees)/Constants.ONE_NXT, Constants.COIN_SYMBOL));
             }
             if (transaction.getType() == TransactionType.Messaging.PHASING_VOTE_CASTING) {
                 return;
@@ -143,18 +153,16 @@ public final class AccountRestrictions {
                 throw new AccountControlException("Phasing parameters mismatch phasing account control. Expected: " +
                         phasingParams.toString() + " . Actual: " + phasingAppendix.getParams().toString());
             }
-            if (!validatingAtFinish) {
-                int duration = phasingAppendix.getFinishHeight() - Nxt.getBlockchain().getHeight();
-                if ((maxDuration > 0 && duration > maxDuration) || (minDuration > 0 && duration < minDuration)) {
-                    throw new AccountControlException("Invalid phasing duration " + duration);
-                }
+            int duration = phasingAppendix.getFinishHeight() - Nxt.getBlockchain().getHeight();
+            if ((maxDuration > 0 && duration > maxDuration) || (minDuration > 0 && duration < minDuration)) {
+                throw new AccountControlException("Invalid phasing duration " + duration);
             }
         }
 
         private void save(Connection con) throws SQLException {
-            try (PreparedStatement pstmt = con.prepareStatement("INSERT INTO account_control_phasing "
+            try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO account_control_phasing "
                     + "(account_id, whitelist, voting_model, quorum, min_balance, holding_id, min_balance_model, "
-                    + "max_fees, min_duration, max_duration, height, latest) "
+                    + "max_fees, min_duration, max_duration, height, latest) KEY (account_id, height) "
                     + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)")) {
                 int i = 0;
                 pstmt.setLong(++i, this.accountId);
@@ -197,15 +205,14 @@ public final class AccountRestrictions {
     static void init() {
     }
 
-    static void checkTransaction(Transaction transaction, boolean validatingAtFinish) throws NxtException.NotCurrentlyValidException {
+    static void checkTransaction(Transaction transaction) throws NxtException.NotCurrentlyValidException {
         Account senderAccount = Account.getAccount(transaction.getSenderId());
         if (senderAccount == null) {
-            (new Exception()).printStackTrace();
             throw new NxtException.NotCurrentlyValidException("Account " + Long.toUnsignedString(transaction.getSenderId()) + " does not exist yet");
         }
         if (senderAccount.getControls().contains(Account.ControlType.PHASING_ONLY)) {
             PhasingOnly phasingOnly = PhasingOnly.get(transaction.getSenderId());
-            phasingOnly.checkTransaction(transaction, validatingAtFinish);
+            phasingOnly.checkTransaction(transaction);
         }
     }
 

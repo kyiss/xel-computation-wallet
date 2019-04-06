@@ -52,14 +52,10 @@ import java.util.Collections;
  * <p>
  * Prunable appendages are classes implementing the {@link nxt.Appendix.Prunable} interface.
  */
-
 public final class SendTransaction extends APIServlet.APIRequestHandler {
 
     static final SendTransaction instance = new SendTransaction();
-    @Override
-    protected final boolean requirePost() {
-        return false;
-    }
+
     private SendTransaction() {
         super(new APITag[] {APITag.TRANSACTIONS}, "transactionJSON", "transactionBytes", "prunableAttachmentJSON");
     }
@@ -90,29 +86,16 @@ public final class SendTransaction extends APIServlet.APIRequestHandler {
             } catch (NxtException.ValidationException | RuntimeException e) {
                 JSONData.putException(response, e, "Failed to broadcast transaction");
             }
-
-        }else{
-            try {
-                Transaction.Builder builder = ParameterParser.parseTransaction(transactionJSON, transactionBytes, prunableAttachmentJSON, true);
-                Transaction transaction = builder.buildComputation(0);
-                transaction.validateComputational();
-                if(!transaction.verifySignature()){
-                    JSONData.putException(response, new Exception("Signature wrong"), "Failed to broadcast transaction (computational): transaction signature is skewed");
-                    return response;
-                };
-                Peers.sendToSomePeersComputation(Collections.singletonList(transaction));
-                Nxt.getTemporaryComputationTransactionProcessor().processLater(Collections.singletonList(transaction));
-                response.put("transaction", transaction.getStringId());
-                response.put("fullHash", transaction.getFullHash());
-            } catch (NxtException.ValidationException | RuntimeException e) {
-                JSONData.putException(response, e, "Failed to broadcast transaction (computational)");
-            }
-
         }
 
         return response;
     }
 
+    @Override
+    protected boolean requirePost() {
+        return true;
+    }
+    
     @Override
     protected boolean requireBlockchain() {
         return false;

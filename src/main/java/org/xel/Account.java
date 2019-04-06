@@ -339,6 +339,24 @@ public final class Account {
             account.save(con);
         }
 
+        @Override
+        public void trim(int height) {
+            if (height <= Constants.GUARANTEED_BALANCE_CONFIRMATIONS) {
+                return;
+            }
+            super.trim(height);
+        }
+        @Override
+        public void checkAvailable(int height) {
+            if (height > Constants.GUARANTEED_BALANCE_CONFIRMATIONS) {
+                super.checkAvailable(height);
+                return;
+            }
+            if (height > Nxt.getBlockchain().getHeight()) {
+                throw new IllegalArgumentException("Height " + height + " exceeds blockchain height " + Nxt.getBlockchain().getHeight());
+            }
+        }
+
     };
 
     private static final DbKey.LongKeyFactory<AccountInfo> accountInfoDbKeyFactory = new DbKey.LongKeyFactory<AccountInfo>("account_id") {
@@ -415,6 +433,15 @@ public final class Account {
             publicKey.save(con);
         }
 
+        @Override
+        public void checkAvailable(int height) {
+            if (height == 0) {
+                //Effective balance at height <= 1440 requires getting the public key at height 0, so don't throw if
+                // historical data at height 0 is missing
+                return;
+            }
+            super.checkAvailable(height);
+        }
     };
 
     private static final DerivedDbTable accountGuaranteedBalanceTable = new DerivedDbTable("account_guaranteed_balance") {
@@ -423,9 +450,13 @@ public final class Account {
         public void trim(int height) {
             try (Connection con = Db.db.getConnection();
                  PreparedStatement pstmtDelete = con.prepareStatement("DELETE FROM account_guaranteed_balance "
-                         + "WHERE height < ? AND height >= 0")) {
+                         + "WHERE height < ? AND height >= 0 LIMIT " + Constants.BATCH_COMMIT_SIZE)) {
                 pstmtDelete.setInt(1, height - Constants.GUARANTEED_BALANCE_CONFIRMATIONS);
-                pstmtDelete.executeUpdate();
+                int count;
+                do {
+                    count = pstmtDelete.executeUpdate();
+                    Db.db.commitTransaction();
+                } while (count >= Constants.BATCH_COMMIT_SIZE);
             } catch (SQLException e) {
                 throw new RuntimeException(e.toString(), e);
             }
@@ -566,7 +597,7 @@ public final class Account {
         if (account == null) {
             PublicKey publicKey = publicKeyTable.get(dbKey, height);
             if (publicKey != null) {
-                account = accountTable.newEntity(dbKey);
+                account = new Account(id);
                 account.publicKey = publicKey;
             }
         }
@@ -879,6 +910,9 @@ public final class Account {
                 lessors.add(iterator.next());
             }
         }
+        if (lessors.isEmpty()) {
+            return 0;
+        }
         Long[] lessorIds = new Long[lessors.size()];
         long[] balances = new long[lessors.size()];
         for (int i = 0; i < lessors.size(); i++) {
@@ -1085,6 +1119,9 @@ public final class Account {
         checkBalance(this.id, this.balanceNQT, this.unconfirmedBalanceNQT);
         save();
         listeners.notify(this, Event.UNCONFIRMED_BALANCE);
+        if (event == null) {
+            return;
+        }
         if (AccountLedger.mustLogEntry(this.id, true)) {
             if (feeNQT != 0) {
                 AccountLedger.logEntry(new LedgerEntry(LedgerEvent.TRANSACTION_FEE, eventId, this.id,
@@ -1113,6 +1150,9 @@ public final class Account {
         save();
         listeners.notify(this, Event.BALANCE);
         listeners.notify(this, Event.UNCONFIRMED_BALANCE);
+        if (event == null) {
+            return;
+        }
         if (AccountLedger.mustLogEntry(this.id, true)) {
             if (feeNQT != 0) {
                 AccountLedger.logEntry(new LedgerEntry(LedgerEvent.TRANSACTION_FEE, eventId, this.id,
