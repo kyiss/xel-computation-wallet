@@ -16,6 +16,8 @@
 
 package org.xel;
 
+import org.xel.VoteWeighting;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 

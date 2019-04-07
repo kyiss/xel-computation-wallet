@@ -16,13 +16,14 @@
 
 package org.xel.http;
 
-import org.xel.Nxt;
 import org.xel.NxtException;
 import org.xel.Transaction;
 import org.xel.peer.Peers;
 import org.xel.util.Convert;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
+import org.xel.Appendix;
+import org.xel.Nxt;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
@@ -52,14 +53,10 @@ import java.util.Collections;
  * <p>
  * Prunable appendages are classes implementing the {@link nxt.Appendix.Prunable} interface.
  */
-
 public final class SendTransaction extends APIServlet.APIRequestHandler {
 
     static final SendTransaction instance = new SendTransaction();
-    @Override
-    protected final boolean requirePost() {
-        return false;
-    }
+
     private SendTransaction() {
         super(new APITag[] {APITag.TRANSACTIONS}, "transactionJSON", "transactionBytes", "prunableAttachmentJSON");
     }
@@ -111,6 +108,11 @@ public final class SendTransaction extends APIServlet.APIRequestHandler {
         }
 
         return response;
+    }
+    
+    @Override
+    protected boolean requirePost() {
+        return true;
     }
 
     @Override

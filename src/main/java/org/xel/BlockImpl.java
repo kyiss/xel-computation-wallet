@@ -61,11 +61,6 @@ final class BlockImpl implements Block {
     private byte[] blockSignature;
     private BigInteger cumulativeDifficulty = BigInteger.ZERO;
     private long baseTarget = Constants.INITIAL_BASE_TARGET;
-    private long powTarget = Long.MAX_VALUE / 10000;
-    private int powLastMass = 0;
-    private int powMass = 0;
-    private long targetLastMass = 0;
-    private long targetMass = 0;
     private volatile long nextBlockId;
     private int height = -1;
     private volatile long id;
@@ -73,6 +68,11 @@ final class BlockImpl implements Block {
     private volatile long generatorId;
     private volatile byte[] bytes = null;
 
+    private long powTarget = Long.MAX_VALUE / 10000;
+    private int powLastMass = 0;
+    private int powMass = 0;
+    private long targetLastMass = 0;
+    private long targetMass = 0;
 
     BlockImpl(int version, int timestamp, long previousBlockId, long totalAmountNQT, long totalFeeNQT, int payloadLength, byte[] payloadHash,
               byte[] generatorPublicKey, byte[] generationSignature, byte[] previousBlockHash, List<TransactionImpl> transactions, String secretPhrase) {
@@ -118,49 +118,41 @@ final class BlockImpl implements Block {
         return checksum;
     }
 
-
     BlockImpl(int version, int timestamp, long previousBlockId, long totalAmountNQT, long totalFeeNQT, int payloadLength,
               byte[] payloadHash, long generatorId, byte[] generationSignature, byte[] blockSignature,
-              byte[] previousBlockHash, BigInteger cumulativeDifficulty, long baseTarget, long powTarget, int
-                      powLastMass, int powMass, long
-                      targetLastMass, long targetMass, long
-                      nextBlockId, int height, long id,
+              byte[] previousBlockHash, BigInteger cumulativeDifficulty, long baseTarget, long nextBlockId, int height, long id,
               List<TransactionImpl> blockTransactions) {
         this(version, timestamp, previousBlockId, totalAmountNQT, totalFeeNQT, payloadLength, payloadHash,
                 null, generationSignature, blockSignature, previousBlockHash, null);
         this.cumulativeDifficulty = cumulativeDifficulty;
         this.baseTarget = baseTarget;
-        this.powTarget = powTarget;
-        this.powLastMass = powLastMass;
-        this.powMass = powMass;
-        this.targetLastMass = targetLastMass;
-        this.targetMass = targetMass;
         this.nextBlockId = nextBlockId;
         this.height = height;
         this.id = id;
         this.generatorId = generatorId;
         this.blockTransactions = blockTransactions;
     }
-
+    
     BlockImpl(int version, int timestamp, long previousBlockId, long totalAmountNQT, long totalFeeNQT, int payloadLength,
               byte[] payloadHash, long generatorId, byte[] generationSignature, byte[] blockSignature,
-              byte[] previousBlockHash, BigInteger cumulativeDifficulty, long baseTarget, long
-                      nextBlockId, int height, long id,
+              byte[] previousBlockHash, BigInteger cumulativeDifficulty, long baseTarget, long nextBlockId, int height, long id,
+              long powTarget, int powLastMass, int powMass, long targetLastMass, long targetMass,
               List<TransactionImpl> blockTransactions) {
         this(version, timestamp, previousBlockId, totalAmountNQT, totalFeeNQT, payloadLength, payloadHash,
                 null, generationSignature, blockSignature, previousBlockHash, null);
         this.cumulativeDifficulty = cumulativeDifficulty;
         this.baseTarget = baseTarget;
-        this.powTarget = powTarget;
-        this.powLastMass = powLastMass;
-        this.powMass = powMass;
-        this.targetLastMass = targetLastMass;
-        this.targetMass = targetMass;
         this.nextBlockId = nextBlockId;
         this.height = height;
         this.id = id;
         this.generatorId = generatorId;
         this.blockTransactions = blockTransactions;
+        
+        this.powTarget = powTarget;
+        this.powLastMass = powLastMass;
+        this.powMass = powMass;
+        this.targetLastMass = targetLastMass;
+        this.targetMass = targetMass;
     }
 
     @Override
@@ -246,11 +238,6 @@ final class BlockImpl implements Block {
     }
 
     @Override
-    public long getBaseTarget() {
-        return baseTarget;
-    }
-
-    @Override
     public long getPowTarget() {
         return powTarget;
     }
@@ -273,6 +260,11 @@ final class BlockImpl implements Block {
     @Override
     public long getTargetMass() {
         return targetMass;
+    }
+    
+    @Override
+    public long getBaseTarget() {
+        return baseTarget;
     }
 
     @Override
@@ -304,7 +296,7 @@ final class BlockImpl implements Block {
                 throw new IllegalStateException("Block is not signed yet");
             }
             byte[] hash = Crypto.sha256().digest(bytes());
-            BigInteger bigInteger = new BigInteger(1, new byte[]{hash[7], hash[6], hash[5], hash[4], hash[3], hash[2], hash[1], hash[0]});
+            BigInteger bigInteger = new BigInteger(1, new byte[] {hash[7], hash[6], hash[5], hash[4], hash[3], hash[2], hash[1], hash[0]});
             id = bigInteger.longValue();
             stringId = bigInteger.toString();
         }

@@ -267,9 +267,9 @@ public final class Peers {
             json.put("apiPort", API.openAPIPort);
             servicesList.add(Peer.Service.API);
         }
-        if (API.openAPIPort > 0) {
-            json.put("apiPort", API.openAPIPort);
-            servicesList.add(Peer.Service.API);
+        if (API.openAPISSLPort > 0) {
+            json.put("apiSSLPort", API.openAPISSLPort);
+            servicesList.add(Peer.Service.API_SSL);
         }
         if (Nxt.getBooleanProperty("nxt.enableComputationBlockchainRedirector") || Nxt.getBooleanProperty("nxt.enableComputationEngine")) {
             servicesList.add(Peer.Service.COMPUTATION_REDIRECTOR);
@@ -765,7 +765,7 @@ public final class Peers {
                     Db.db.endTransaction();
                 }
             }
-        }), Event.CHANGED_SERVICES);
+        }), Peers.Event.CHANGED_SERVICES);
     }
 
     static {
@@ -1128,22 +1128,22 @@ public final class Peers {
             }
         });
     }
+    
+    public static Peer getAnyPeerWithService(final Peer.State state, final boolean applyPullThreshold, Peer.Service s) {
+        return getWeightedPeerWithService(getPublicPeers(state, applyPullThreshold,s), s);
+    }
+
+    public static List<Peer> getPublicPeers(final Peer.State state, final boolean applyPullThreshold, Peer.Service s) {
+        return getPeers(peer -> !peer.isBlacklisted() && peer.getState() == state && peer.providesService(s) && (!applyPullThreshold || !Peers.enableHallmarkProtection || peer.getWeight() >= Peers.pullThreshold));
+    }
 
     public static Peer getAnyPeer(final Peer.State state, final boolean applyPullThreshold) {
         return getWeightedPeer(getPublicPeers(state, applyPullThreshold));
     }
 
-    public static Peer getAnyPeerWithService(final Peer.State state, final boolean applyPullThreshold, Peer.Service s) {
-        return getWeightedPeerWithService(getPublicPeers(state, applyPullThreshold,s), s);
-    }
-
     public static List<Peer> getPublicPeers(final Peer.State state, final boolean applyPullThreshold) {
         return getPeers(peer -> !peer.isBlacklisted() && peer.getState() == state && peer.getAnnouncedAddress() != null
                 && (!applyPullThreshold || !Peers.enableHallmarkProtection || peer.getWeight() >= Peers.pullThreshold));
-    }
-
-    public static List<Peer> getPublicPeers(final Peer.State state, final boolean applyPullThreshold, Peer.Service s) {
-        return getPeers(peer -> !peer.isBlacklisted() && peer.getState() == state && peer.providesService(s) && (!applyPullThreshold || !Peers.enableHallmarkProtection || peer.getWeight() >= Peers.pullThreshold));
     }
 
     public static Peer getWeightedPeer(List<Peer> selectedPeers) {

@@ -30,11 +30,11 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
 
 import javax.servlet.http.HttpServletRequest;
+
+import java.awt.List;
 import java.math.BigInteger;
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public final class GetState extends APIServlet.APIRequestHandler {
@@ -49,19 +49,6 @@ public final class GetState extends APIServlet.APIRequestHandler {
     protected JSONStreamAware processRequest(HttpServletRequest req) {
 
         JSONObject response = GetBlockchainStatus.instance.processRequest(req);
-        boolean includeLastTargets = false;
-
-        try {
-            includeLastTargets = ParameterParser.getBooleanByString(req, "includeLastTargets", false);
-        } catch (ParameterException e) {
-        }
-
-        boolean includeTasks = false;
-
-        try {
-            includeTasks = ParameterParser.getBooleanByString(req, "includeTasks", false);
-        } catch (ParameterException e) {
-        }
 
         if ("true".equalsIgnoreCase(req.getParameter("includeCounts")) && API.checkPassword(req)) {
             response.put("numberOfTransactions", Nxt.getBlockchain().getTransactionCount());
@@ -69,6 +56,8 @@ public final class GetState extends APIServlet.APIRequestHandler {
             response.put("numberOfPolls", Poll.getCount());
             response.put("numberOfVotes", Vote.getCount());
             response.put("numberOfPrunableMessages", PrunableMessage.getCount());
+            response.put("numberOfTaggedData", TaggedData.getCount());
+            response.put("numberOfDataTags", TaggedData.Tag.getTagCount());
             response.put("numberOfAccountLeases", Account.getAccountLeaseCount());
             response.put("numberOfActiveAccountLeases", Account.getActiveLeaseCount());
             response.put("numberOfPhasingOnlyAccounts", AccountRestrictions.PhasingOnly.getCount());
@@ -83,10 +72,28 @@ public final class GetState extends APIServlet.APIRequestHandler {
         response.put("peerPort", Peers.getDefaultPeerPort());
         response.put("isOffline", Constants.isOffline);
         response.put("needsAdminPassword", !API.disableAdminPassword);
-
+        InetAddress externalAddress = UPnP.getExternalAddress();
+        if (externalAddress != null) {
+            response.put("upnpExternalAddress", externalAddress.getHostAddress());
+        }
+        
         response.put("lastBlock", Long.toUnsignedString(GetLastBlockId.getLastBlock()));
+        
         response.put("lastBlockComputation", GetLastBlockId.getLastBlockComputational());
+        
+        boolean includeLastTargets = false;
+        try {
+            includeLastTargets = ParameterParser.getBooleanByString(req, "includeLastTargets", false);
+        } catch (ParameterException e) {
+        }
 
+        boolean includeTasks = false;
+
+        try {
+            includeTasks = ParameterParser.getBooleanByString(req, "includeTasks", false);
+        } catch (ParameterException e) {
+        }
+        
         if (includeTasks) {
             response.put("totalOpen", Work.getActiveCount());
             response.put("totalClosed", Work.getCount()-Work.getActiveCount());
@@ -219,10 +226,7 @@ public final class GetState extends APIServlet.APIRequestHandler {
             e.printStackTrace();
         }
 
-        InetAddress externalAddress = UPnP.getExternalAddress();
-        if (externalAddress != null) {
-            response.put("upnpExternalAddress", externalAddress.getHostAddress());
-        }
+
         if(includeLastTargets){
             JSONArray arr = new JSONArray();
             int counter = 0;

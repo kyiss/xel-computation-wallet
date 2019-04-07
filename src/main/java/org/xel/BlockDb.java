@@ -201,8 +201,8 @@ final class BlockDb {
     static Set<Long> getBlockGenerators(int startHeight) {
         Set<Long> generators = new HashSet<>();
         try (Connection con = Db.db.getConnection();
-             PreparedStatement pstmt = con.prepareStatement(
-                     "SELECT generator_id, COUNT(generator_id) AS count FROM block WHERE height >= ? GROUP BY generator_id")) {
+                PreparedStatement pstmt = con.prepareStatement(
+                        "SELECT generator_id, COUNT(generator_id) AS count FROM block WHERE height >= ? GROUP BY generator_id")) {
             pstmt.setInt(1, startHeight);
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {

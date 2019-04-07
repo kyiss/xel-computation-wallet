@@ -57,16 +57,14 @@ public final class Nxt {
 
     public static final String NXT_DEFAULT_PROPERTIES = "nxt-default.properties";
     public static final String NXT_DEFAULT_JUNIT_PROPERTIES = "nxt-junit-default.properties";
-    public static final String NXT_DEFAULT_TESTVM_PROPERTIES = "testvm.properties";
-
     public static final String NXT_PROPERTIES = "nxt.properties";
     public static final String CONFIG_DIR = "conf";
-    public static final String CONFIG_DIR_USER = "conf_user";
+    public static final String NXT_DEFAULT_TESTVM_PROPERTIES = "testvm.properties";
+
     private static final RuntimeMode runtimeMode;
     private static final DirProvider dirProvider;
 
     private static final Properties defaultProperties = new Properties();
-
     static {
         redirectSystemStreams("out");
         redirectSystemStreams("err");
@@ -77,8 +75,6 @@ public final class Nxt {
         dirProvider = RuntimeEnvironment.getDirProvider();
         System.out.println("User home folder " + dirProvider.getUserHomeDir());
         if (JUnitEnvironment.isJUnitTest()) {
-            System.out.printf("WARNING, YOU ARE USING A JUNIT RUNTIME ENVIRONMENT");
-
             loadProperties(defaultProperties, NXT_DEFAULT_JUNIT_PROPERTIES, true);
         } else {
             loadProperties(defaultProperties, NXT_DEFAULT_PROPERTIES, true);
@@ -127,25 +123,6 @@ public final class Nxt {
 
     public static Properties loadProperties(Properties properties, String propertiesFile, boolean isDefault) {
         try {
-
-            // CHECK IF PROPERTIES FILE IS IN CONF_USER FOLDER
-
-            Path currentRelativePath = Paths.get("");
-            Path confDirAlt = currentRelativePath.toAbsolutePath().resolve(CONFIG_DIR_USER);
-            if (Files.isReadable(confDirAlt)) {
-                Path prop = confDirAlt.resolve(propertiesFile);
-                if(Files.isReadable(prop)){
-                    try (InputStream fis = new FileInputStream(prop.toFile())) {
-                        properties.load(fis);
-                        return properties;
-                    } catch (IOException e) {
-                    }
-                }
-            }
-
-
-
-
             // Load properties from location specified as command line parameter
             String configFile = System.getProperty(propertiesFile);
             if (configFile != null) {
@@ -185,14 +162,11 @@ public final class Nxt {
                             Files.createDirectory(Paths.get(homeDir));
                         }
                     }
-
                     Path confDir = Paths.get(homeDir, CONFIG_DIR);
                     if (!Files.isReadable(confDir)) {
                         System.out.printf("Creating dir %s\n", confDir);
                         Files.createDirectory(confDir);
                     }
-
-
                     Path propPath = Paths.get(confDir.toString()).resolve(Paths.get(propertiesFile));
                     if (Files.isReadable(propPath)) {
                         System.out.printf("Loading %s from dir %s\n", propertiesFile, confDir);
@@ -202,7 +176,6 @@ public final class Nxt {
                         Files.createFile(propPath);
                         Files.write(propPath, Convert.toBytes("# use this file for workstation specific " + propertiesFile));
                     }
-
                     return properties;
                 } catch (IOException e) {
                     throw new IllegalArgumentException("Error loading " + propertiesFile, e);
@@ -253,7 +226,7 @@ public final class Nxt {
 
     public static String getStringProperty(String name, String defaultValue, boolean doNotLog) {
         String value = properties.getProperty(name);
-        if (value != null && !"".equals(value)) {
+        if (value != null && ! "".equals(value)) {
             Logger.logMessage(name + " = \"" + (doNotLog ? "{not logged}" : value) + "\"");
             return value;
         } else {
@@ -314,7 +287,7 @@ public final class Nxt {
     }
 
     public static Transaction.Builder newTransactionBuilder(byte[] senderPublicKey, long amountNQT, long feeNQT, short deadline, Attachment attachment) {
-        return new TransactionImpl.BuilderImpl((byte) 1, senderPublicKey, amountNQT, feeNQT, deadline, (Attachment.AbstractAttachment) attachment);
+        return new TransactionImpl.BuilderImpl((byte)1, senderPublicKey, amountNQT, feeNQT, deadline, (Attachment.AbstractAttachment)attachment);
     }
 
     public static Transaction.Builder newTransactionBuilder(byte[] transactionBytes) throws NxtException.NotValidException {
@@ -415,6 +388,7 @@ public final class Nxt {
                 PowAndBounty.init();
                 PhasingVote.init();
                 PrunableMessage.init();
+                TaggedData.init();
                 Peers.init();
                 APIProxy.init();
                 Generator.init();
@@ -423,7 +397,6 @@ public final class Nxt {
                 Users.init();
                 DebugTrace.init();
                 AlternativeChainPubkeys.init();
-
                 int timeMultiplier = (Constants.isTestnet && Constants.isOffline) ? Math.max(Nxt.getIntProperty("nxt.timeMultiplier"), 1) : 1;
                 ThreadPool.start(timeMultiplier);
                 if (timeMultiplier > 1) {
@@ -432,8 +405,7 @@ public final class Nxt {
                 }
                 try {
                     secureRandomInitThread.join(10000);
-                } catch (InterruptedException ignore) {
-                }
+                } catch (InterruptedException ignore) {}
                 testSecureRandom();
                 long currentTime = System.currentTimeMillis();
 
@@ -459,7 +431,7 @@ public final class Nxt {
                 Logger.logMessage("Nxt server " + VERSION + " started successfully.");
                 Logger.logMessage("Copyright © 2013-2016 The Nxt Core Developers.");
                 Logger.logMessage("Copyright © 2016-2017 Jelurida IP B.V.");
-                Logger.logMessage("Copyright © 2018 XEL Development Team.");
+                Logger.logMessage("Copyright © 2019 XEL Development Team.");
                 Logger.logMessage("Distributed under GPLv2, with ABSOLUTELY NO WARRANTY.");
                 if (API.getWelcomePageUri() != null) {
                     Logger.logMessage("Client UI is at " + API.getWelcomePageUri());
@@ -486,28 +458,27 @@ public final class Nxt {
             initialized = true;
         }
 
-        private Init() {
-        } // never
+        private Init() {} // never
 
     }
 
     private static void setSystemProperties() {
-        // Override system settings that the user has define in nxt.properties file.
-        String[] systemProperties = new String[]{
-                "socksProxyHost",
-                "socksProxyPort",
-        };
+      // Override system settings that the user has define in nxt.properties file.
+      String[] systemProperties = new String[] {
+        "socksProxyHost",
+        "socksProxyPort",
+      };
 
-        for (String propertyName : systemProperties) {
-            String propertyValue;
-            if ((propertyValue = getStringProperty(propertyName)) != null) {
-                System.setProperty(propertyName, propertyValue);
-            }
-        }
+      for (String propertyName : systemProperties) {
+    	  String propertyValue;
+    	  if ((propertyValue = getStringProperty(propertyName)) != null) {
+    		  System.setProperty(propertyName, propertyValue);
+    	  }
+      }
     }
 
     private static void logSystemProperties() {
-        String[] loggedProperties = new String[]{
+        String[] loggedProperties = new String[] {
                 "java.version",
                 "java.vm.version",
                 "java.vm.name",
@@ -550,8 +521,7 @@ public final class Nxt {
                 throw new RuntimeException("SecureRandom implementation too slow!!! " +
                         "Install haveged if on linux, or set nxt.useStrongSecureRandom=false.");
             }
-        } catch (InterruptedException ignore) {
-        }
+        } catch (InterruptedException ignore) {}
     }
 
     public static String getProcessId() {
@@ -594,7 +564,6 @@ public final class Nxt {
         runtimeMode.launchDesktopApplication();
     }
 
-    private Nxt() {
-    } // never
+    private Nxt() {} // never
 
 }

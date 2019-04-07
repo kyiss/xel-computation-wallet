@@ -17,11 +17,11 @@
 
 package org.xel.http;
 
-import org.xel.*;
 import org.xel.crypto.Crypto;
 import org.xel.util.Convert;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
+import org.xel.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
@@ -284,7 +284,7 @@ abstract class CreateTransaction extends APIServlet.APIRequestHandler {
     }
 
     @Override
-    protected boolean requirePost() {
+    protected final boolean requirePost() {
         return true;
     }
 

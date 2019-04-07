@@ -58,7 +58,6 @@ public class ManifestGenerator {
             classpath.append(dirListing.getClasspath());
         }
         classpath.append("conf/");
-        classpath.append("conf_user/");
         manifest.getMainAttributes().put(Attributes.Name.CLASS_PATH, classpath.toString());
         try {
             manifest.write(Files.newOutputStream(Paths.get(fileName), StandardOpenOption.CREATE));

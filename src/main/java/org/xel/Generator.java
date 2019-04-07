@@ -54,8 +54,6 @@ public final class Generator implements Comparable<Generator> {
     private static final ConcurrentMap<String, Generator> generators = new ConcurrentHashMap<>();
     private static final Collection<Generator> allGenerators = Collections.unmodifiableCollection(generators.values());
     private static volatile List<Generator> sortedForgers = null;
-
-
     private static long lastBlockId;
     private static long lastBlockIdComputation;
     private static int delayTime = Constants.FORGING_DELAY;

@@ -85,7 +85,7 @@ public final class Logger {
                     ByteArrayOutputStream outStream = new ByteArrayOutputStream();
                     loggingProperties.store(outStream, "logging properties");
                     ByteArrayInputStream inStream = new ByteArrayInputStream(outStream.toByteArray());
-                    LogManager.getLogManager().readConfiguration(inStream);
+                    java.util.logging.LogManager.getLogManager().readConfiguration(inStream);
                     inStream.close();
                     outStream.close();
                 }

@@ -31,14 +31,19 @@ public interface BlockchainProcessor extends Observable<Block,BlockchainProcesso
         BLOCK_PUSHED, BLOCK_POPPED, BLOCK_GENERATED, BLOCK_SCANNED,
         RESCAN_BEGIN, RESCAN_END,
         BEFORE_BLOCK_ACCEPT, AFTER_BLOCK_ACCEPT,
-        BEFORE_BLOCK_APPLY, AFTER_BLOCK_APPLY,
+        BEFORE_BLOCK_APPLY, AFTER_BLOCK_APPLY
+        ,
         BLOCK_PUSHED_COMPUTATION, BLOCK_POPPED_COMPUTATION, BLOCK_GENERATED_COMPUTATION, BLOCK_SCANNED_COMPUTATION,
         RESCAN_BEGIN_COMPUTATION, RESCAN_END_COMPUTATION,
         BEFORE_BLOCK_ACCEPT_COMPUTATION, AFTER_BLOCK_ACCEPT_COMPUTATION,
         BEFORE_BLOCK_APPLY_COMPUTATION, AFTER_BLOCK_APPLY_COMPUTATION
     }
+    
     void pushBlock(final BlockImpl block, boolean pushAnyway) throws BlockNotAcceptedException;
+    
     void pushBlock(final BlockImpl block) throws BlockNotAcceptedException;
+    
+    void registerComputationalDerivedTable(ComputationalDerivedDbTable table);
 
     Peer getLastBlockchainFeeder();
 
@@ -69,8 +74,6 @@ public interface BlockchainProcessor extends Observable<Block,BlockchainProcesso
     List<? extends Block> popOffTo(int height);
 
     void registerDerivedTable(DerivedDbTable table);
-
-    void registerComputationalDerivedTable(ComputationalDerivedDbTable table);
 
     void trimDerivedTables();
 

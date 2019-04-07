@@ -55,16 +55,24 @@ public interface Block {
 
     List<? extends Transaction> getTransactions();
 
-    List<? extends Transaction> getTransactionsComputational();
-
     byte[] getGenerationSignature();
 
     byte[] getBlockSignature();
 
     long getBaseTarget();
 
+    BigInteger getCumulativeDifficulty();
+
+    byte[] getBytes();
+
+    JSONObject getJSONObject();
+    
     long getPowTarget();
 
+    byte[] getGeneratorPubkeyComputational();
+
+    List<? extends Transaction> getTransactionsComputational();
+    
     int getPowLastMass();
 
     int getPowMass();
@@ -74,15 +82,9 @@ public interface Block {
     long getTargetMass();
 
     void calculatePowTarget(int powCounter, int min, int max);
-
-    BigInteger getCumulativeDifficulty();
-
-    byte[] getBytes();
-
-    byte[] getGeneratorPubkeyComputational();
-
-    JSONObject getJSONObject();
+    
     JSONObject getJSONObjectComputational();
+    
     long getPreviousBlockPowTarget();
 
     byte[] getBlockHash();
