@@ -296,11 +296,12 @@ public class MessageEncoder {
 
 
     public static void init(){
+
         if(Nxt.getBooleanProperty("nxt.enableComputationEngine")) {
             Nxt.getBlockchainProcessor().addListener(block -> {
                 GetLastBlockId.lastBlockId = block.getId();
                 paymentProcessor(block);
-            }, BlockchainProcessorImpl.Event.AFTER_BLOCK_APPLY);
+            }, BlockchainProcessor.Event.AFTER_BLOCK_APPLY);
         }
         if(Nxt.getBooleanProperty("nxt.enableComputationEngine")) {
             Nxt.getTemporaryComputationBlockchainProcessor().addListener(block -> {

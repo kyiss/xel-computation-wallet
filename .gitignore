@@ -17,3 +17,5 @@ xel-computation-wallet\.jar
 \.classpath
 \.project
 \*.iml
+
+xel-computation-wallet\.iml

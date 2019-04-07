@@ -31,10 +31,10 @@ import org.json.simple.JSONStreamAware;
 
 import javax.servlet.http.HttpServletRequest;
 
-import java.awt.List;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public final class GetState extends APIServlet.APIRequestHandler {
