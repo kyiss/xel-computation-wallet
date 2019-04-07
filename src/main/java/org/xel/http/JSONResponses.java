@@ -92,9 +92,6 @@ public final class JSONResponses {
     public static final JSONStreamAware INCORRECT_ACCOUNT_DESCRIPTION_LENGTH = incorrect("description", "(length must be less than " + Constants.MAX_ACCOUNT_DESCRIPTION_LENGTH + " characters)");
     public static final JSONStreamAware MISSING_UNSIGNED_BYTES = missing("unsignedTransactionBytes");
     public static final JSONStreamAware MISSING_SIGNATURE_HASH = missing("signatureHash");
-    public static final JSONStreamAware INCORRECT_DGS_LISTING_NAME = incorrect("name", "(length must be not longer than " + Constants.MAX_DGS_LISTING_NAME_LENGTH + " characters)");
-    public static final JSONStreamAware INCORRECT_DGS_LISTING_DESCRIPTION = incorrect("description", "(length must be not longer than " + Constants.MAX_DGS_LISTING_DESCRIPTION_LENGTH + " characters)");
-    public static final JSONStreamAware INCORRECT_DGS_LISTING_TAGS = incorrect("tags", "(length must be not longer than " + Constants.MAX_DGS_LISTING_TAGS_LENGTH + " characters)");
     public static final JSONStreamAware UNKNOWN_GOODS = unknown("goods");
     public static final JSONStreamAware INCORRECT_DELTA_QUANTITY = incorrect("deltaQuantity");
     public static final JSONStreamAware MISSING_DELTA_QUANTITY = missing("deltaQuantity");
@@ -112,11 +109,6 @@ public final class JSONResponses {
     public static final JSONStreamAware MISSING_HEIGHT = missing("height");
     public static final JSONStreamAware INCORRECT_MESSAGE_TO_ENCRYPT = incorrect("messageToEncrypt");
     public static final JSONStreamAware MISSING_MESSAGE_TO_ENCRYPT = missing("messageToEncrypt");
-    public static final JSONStreamAware INCORRECT_CURRENCY_NAME_LENGTH = incorrect("name", "(length must be in [" + Constants.MIN_CURRENCY_NAME_LENGTH + ".." + Constants.MAX_CURRENCY_NAME_LENGTH + "] range)");
-    public static final JSONStreamAware INCORRECT_CURRENCY_CODE_LENGTH = incorrect("code", "(length must be in [" + Constants.MIN_CURRENCY_CODE_LENGTH + ".." + Constants.MAX_CURRENCY_CODE_LENGTH + "] range)");
-    public static final JSONStreamAware INCORRECT_CURRENCY_NAME = incorrect("name", "(must contain only digits and latin letters)");
-    public static final JSONStreamAware INCORRECT_CURRENCY_CODE = incorrect("code", "(must contain only uppercase latin letters)");
-    public static final JSONStreamAware INCORRECT_CURRENCY_DESCRIPTION_LENGTH = incorrect("description", "(length must not exceed " + Constants.MAX_CURRENCY_DESCRIPTION_LENGTH + " characters)");
     public static final JSONStreamAware MISSING_CURRENCY = missing("currency");
     public static final JSONStreamAware MISSING_CURRENCY_ACCOUNT = missing("currency", "account");
     public static final JSONStreamAware UNKNOWN_CURRENCY = unknown("currency");

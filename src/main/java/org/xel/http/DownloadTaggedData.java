@@ -28,7 +28,7 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import static nxt.http.JSONResponses.PRUNED_TRANSACTION;
+import static org.xel.http.JSONResponses.PRUNED_TRANSACTION;
 
 public final class DownloadTaggedData extends APIServlet.APIRequestHandler {
 

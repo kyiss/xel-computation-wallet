@@ -416,7 +416,6 @@ public final class Nxt {
                 Account.init();
                 AccountRestrictions.init();
                 AccountLedger.init();
-                Hub.init();
                 Poll.init();
                 PhasingPoll.init();
                 Redeem.init();

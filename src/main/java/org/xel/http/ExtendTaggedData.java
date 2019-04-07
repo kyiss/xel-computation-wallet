@@ -27,7 +27,7 @@ import org.json.simple.JSONStreamAware;
 
 import javax.servlet.http.HttpServletRequest;
 
-import static nxt.http.JSONResponses.UNKNOWN_TRANSACTION;
+import static org.xel.http.JSONResponses.UNKNOWN_TRANSACTION;
 
 public final class ExtendTaggedData extends CreateTransaction {
 

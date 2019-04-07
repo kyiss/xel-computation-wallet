@@ -53,8 +53,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -69,13 +71,6 @@ import static org.xel.TransactionType.TYPE_PAYMENT;
 
 final class BlockchainProcessorImpl implements BlockchainProcessor {
 
-    /*private static final byte[] CHECKSUM_TRANSPARENT_FORGING =
-            new byte[] {
-                    -122, -111, -35, 76, 59, 79, -75, 117, 34, 2, -70, -65, -38, 59, 0, 57,
-                    120, 0, -107, 11, 97, -48, 21, 36, 48, -94, 88, 54, -14, 60, -101, -80
-            };
-  */
-
     private static final byte[] CHECKSUM_100000 =
             new byte[] {
                     -53, -40, -41, -7, -47, -21, 11, -50, -57, -60, 106, 86, -98, -29, -115, -35, -26, 20, 28, 59, -54, -56, 72, 8, -43, 125, -86, 84, 82, -7, 2, 106 };
@@ -89,6 +84,12 @@ final class BlockchainProcessorImpl implements BlockchainProcessor {
             new byte[] {
                     126, -104, 88, -19, 85, -49, -13, -3, -21, 46, 39, 12, 4, 77, -22, -86, 85, 87, -34, 98, -124, -127, 92, -125, -75, -63, -84, -118, 13, 70, -102, -38 };
 
+    private static final NavigableMap<Integer, byte[]> checksums;
+    static {
+        NavigableMap<Integer, byte[]> map = new TreeMap<>();
+        map.put(0, null);
+        checksums = Collections.unmodifiableNavigableMap(map);
+    }
 
     private static final BlockchainProcessorImpl instance = new BlockchainProcessorImpl();
 
@@ -210,9 +211,12 @@ final class BlockchainProcessorImpl implements BlockchainProcessor {
                 if (betterCumulativeDifficulty.equals(curCumulativeDifficulty)) {
                     return;
                 }
+                
+                //long commonMilestoneBlockId = genesisBlockId;
 
                 long commonMilestoneBlockId = Genesis.GENESIS_BLOCK_ID;
 
+				//if (blockchain.getHeight() > 0) {
                 if (blockchain.getLastBlock().getId() != Genesis.GENESIS_BLOCK_ID) {
                     commonMilestoneBlockId = getCommonMilestoneBlockId(peer);
                 }
@@ -337,6 +341,7 @@ final class BlockchainProcessorImpl implements BlockchainProcessor {
                 }
                 if (milestoneBlockIds.isEmpty()) {
                     return Genesis.GENESIS_BLOCK_ID;
+                    //return genesisBlockId;
                 }
                 // prevent overloading with blockIds
                 if (milestoneBlockIds.size() > 20) {
@@ -1141,10 +1146,10 @@ final class BlockchainProcessorImpl implements BlockchainProcessor {
                 scheduleScan(0, false);
                 //BlockDb.deleteBlock(Genesis.GENESIS_BLOCK_ID); // fails with stack overflow in H2
                 BlockDb.deleteAll();
-                //if (addGenesisBlock()) {
-                //    scan(0, false);
-                //}
-                addGenesisBlock();
+                //addGenesisBlock();
+                if (addGenesisBlock()) {
+                    scan(0, false);
+                } 
             } finally {
                 setGetMoreBlocks(true);
             }
@@ -1308,7 +1313,7 @@ final class BlockchainProcessorImpl implements BlockchainProcessor {
                     Genesis.CREATOR_PUBLIC_KEY, new byte[64], Genesis.GENESIS_BLOCK_SIGNATURE, null, transactions);
 
             Logger.logInfoMessage("Creating Genesisblock with ID = " + genesisBlock.getStringId() + " [signed representation = " + genesisBlock.getId() + "]");
-            System.out.println(genesisBlock.getJSONObject().toJSONString());
+            //System.out.println(genesisBlock.getJSONObject().toJSONString());
             genesisBlock.setPrevious(null);
             addBlock(genesisBlock);
             return true;
@@ -1318,11 +1323,11 @@ final class BlockchainProcessorImpl implements BlockchainProcessor {
         }
     }
 
-    public void pushBlock(final BlockImpl block) throws BlockNotAcceptedException {
+    private void pushBlock(final BlockImpl block) throws BlockNotAcceptedException {
         pushBlock(block, false);
     }
 
-    public void pushBlock(final BlockImpl block, boolean pushAnyway) throws BlockNotAcceptedException {
+    private void pushBlock(final BlockImpl block, boolean pushAnyway) throws BlockNotAcceptedException {
 
         int curTime = Nxt.getEpochTime();
 
@@ -1356,10 +1361,11 @@ final class BlockchainProcessorImpl implements BlockchainProcessor {
                 TransactionProcessorImpl.getInstance().requeueAllUnconfirmedTransactions();
                 addBlock(block);
                 accept(block, validPhasedTransactions, invalidPhasedTransactions, duplicates);
-
+                //BlockDb.commit(block);
                 Db.db.commitTransaction();
             } catch (Exception e) {
                 Db.db.rollbackTransaction();
+                popOffTo(previousLastBlock);
                 blockchain.setLastBlock(previousLastBlock);
                 throw e;
             } finally {
@@ -1395,8 +1401,8 @@ final class BlockchainProcessorImpl implements BlockchainProcessor {
                             invalidPhasedTransactions.add(phasedTransaction);
                         }
                     } catch (NxtException.ValidationException e) {
-                        Logger.logDebugMessage("At height " + height + " phased transaction " + phasedTransaction.getStringId() + " no longer passes validation: "
-                                + e.getMessage() + ", will not apply");
+                    Logger.logDebugMessage("At height " + height + " phased transaction " + phasedTransaction.getStringId() + " no longer passes validation: "
+                            + e.getMessage() + ", will not apply");
                         invalidPhasedTransactions.add(phasedTransaction);
                     }
                 }
@@ -1647,7 +1653,7 @@ final class BlockchainProcessorImpl implements BlockchainProcessor {
                 Db.db.clearCache();
                 Db.db.commitTransaction();
             } catch (RuntimeException e) {
-                Logger.logErrorMessage("Error popping off to " + commonBlock.getHeight() + ", " + e.toString());
+                Logger.logErrorMessage("Error popping off to " + commonBlock.getHeight() + ", " + e.toString(), e);
                 Db.db.rollbackTransaction();
                 BlockImpl lastBlock = BlockDb.findLastBlock();
                 blockchain.setLastBlock(lastBlock);

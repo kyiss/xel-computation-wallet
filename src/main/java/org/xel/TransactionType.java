@@ -19,6 +19,7 @@ package org.xel;
 import org.xel.Account.ControlType;
 import org.xel.AccountLedger.LedgerEvent;
 import org.xel.Attachment.AbstractAttachment;
+import org.xel.NxtException.NotValidException;
 import org.xel.NxtException.ValidationException;
 import org.xel.VoteWeighting.VotingModel;
 import org.xel.computation.CommandPowBty;
@@ -84,8 +85,6 @@ public abstract class TransactionType {
                         return Messaging.POLL_CREATION;
                     case SUBTYPE_MESSAGING_VOTE_CASTING:
                         return Messaging.VOTE_CASTING;
-                    case SUBTYPE_MESSAGING_HUB_ANNOUNCEMENT:
-                        return Messaging.HUB_ANNOUNCEMENT;
                     case SUBTYPE_MESSAGING_ACCOUNT_INFO:
                         return Messaging.ACCOUNT_INFO;
                     case SUBTYPE_MESSAGING_PHASING_VOTE_CASTING:
@@ -498,7 +497,7 @@ public abstract class TransactionType {
                     if (result == null) throw new NxtException.NotValidException("Invalid signatures provided");
 
                     try {
-                        final String add = result.toAddress(Constants.MAINNET_PARAMS).toString();
+                        final String add = result.toAddress(Genesis.MAINNET_PARAMS).toString();
                         signedBy.add(add);
                     }
                     catch(Exception e){
@@ -983,72 +982,7 @@ public abstract class TransactionType {
 
         };
 
-        public static final TransactionType HUB_ANNOUNCEMENT = new Messaging() {
 
-            @Override
-            public final byte getSubtype() {
-                return TransactionType.SUBTYPE_MESSAGING_HUB_ANNOUNCEMENT;
-            }
-
-            @Override
-            public LedgerEvent getLedgerEvent() {
-                return LedgerEvent.HUB_ANNOUNCEMENT;
-            }
-
-            @Override
-            public String getName() {
-                return "HubAnnouncement";
-            }
-
-            @Override
-            Attachment.MessagingHubAnnouncement parseAttachment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
-                return new Attachment.MessagingHubAnnouncement(buffer, transactionVersion);
-            }
-
-            @Override
-            Attachment.MessagingHubAnnouncement parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
-                return new Attachment.MessagingHubAnnouncement(attachmentData);
-            }
-
-            @Override
-            void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
-                Attachment.MessagingHubAnnouncement attachment = (Attachment.MessagingHubAnnouncement) transaction.getAttachment();
-                Hub.addOrUpdateHub(transaction, attachment);
-            }
-
-            @Override
-            void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
-                if(1==1)
-                    throw new NxtException.NotYetEnabledException("Hub terminal announcement not yet enabled");
-
-                if (Nxt.getBlockchain().getHeight() < Constants.TRANSPARENT_FORGING_BLOCK_7) {
-                    throw new NxtException.NotYetEnabledException("Hub terminal announcement not yet enabled at height " + Nxt.getBlockchain().getHeight());
-                }
-                Attachment.MessagingHubAnnouncement attachment = (Attachment.MessagingHubAnnouncement) transaction.getAttachment();
-                if (attachment.getMinFeePerByteNQT() < 0 || attachment.getMinFeePerByteNQT() > Constants.MAX_BALANCE_NQT
-                        || attachment.getUris().length > Constants.MAX_HUB_ANNOUNCEMENT_URIS) {
-                    // cfb: "0" is allowed to show that another way to determine the min fee should be used
-                    throw new NxtException.NotValidException("Invalid hub terminal announcement: " + attachment.getJSONObject());
-                }
-                for (String uri : attachment.getUris()) {
-                    if (uri.length() > Constants.MAX_HUB_ANNOUNCEMENT_URI_LENGTH) {
-                        throw new NxtException.NotValidException("Invalid URI length: " + uri.length());
-                    }
-                    //also check URI validity here?
-                }
-            }
-
-            @Override
-            public boolean canHaveRecipient() {
-                return false;
-            }
-
-            @Override
-            public boolean isPhasingSafe() {
-                return true;
-            }
-
-        };
 
         public static final Messaging ACCOUNT_INFO = new Messaging() {
 

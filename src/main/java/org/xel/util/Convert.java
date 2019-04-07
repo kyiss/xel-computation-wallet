@@ -167,11 +167,11 @@ public final class Convert {
     }
 
     public static long fromEpochTime(int epochTime) {
-        return epochTime * 1000L + Constants.EPOCH_BEGINNING - 500L;
+        return epochTime * 1000L + Genesis.EPOCH_BEGINNING - 500L;
     }
 
     public static int toEpochTime(long currentTime) {
-        return (int)((currentTime - Constants.EPOCH_BEGINNING + 500) / 1000);
+        return (int)((currentTime - Genesis.EPOCH_BEGINNING + 500) / 1000);
     }
 
     public static String emptyToNull(String s) {

@@ -29,8 +29,6 @@ public interface Block {
 
     String getStringId();
 
-    byte[] getChecksum(int fromHeight, int toHeight);
-
     int getHeight();
 
     int getTimestamp();
@@ -55,14 +53,31 @@ public interface Block {
 
     List<? extends Transaction> getTransactions();
 
-    List<? extends Transaction> getTransactionsComputational();
-
     byte[] getGenerationSignature();
 
     byte[] getBlockSignature();
 
     long getBaseTarget();
 
+    BigInteger getCumulativeDifficulty();
+
+    byte[] getBytes();
+
+    JSONObject getJSONObject();
+
+
+    byte[] getChecksum(int fromHeight, int toHeight);
+    
+    List<? extends Transaction> getTransactionsComputational();
+    
+    byte[] getGeneratorPubkeyComputational();
+    
+    JSONObject getJSONObjectComputational();
+    
+    long getPreviousBlockPowTarget();
+    
+    byte[] getBlockHash();
+    
     long getPowTarget();
 
     int getPowLastMass();
@@ -74,16 +89,4 @@ public interface Block {
     long getTargetMass();
 
     void calculatePowTarget(int powCounter, int min, int max);
-
-    BigInteger getCumulativeDifficulty();
-
-    byte[] getBytes();
-
-    byte[] getGeneratorPubkeyComputational();
-
-    JSONObject getJSONObject();
-    JSONObject getJSONObjectComputational();
-    long getPreviousBlockPowTarget();
-
-    byte[] getBlockHash();
 }

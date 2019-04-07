@@ -16,23 +16,20 @@
 
 package org.xel;
 
-import org.bitcoinj.params.MainNetParams;
-
-import java.util.Calendar;
-import java.util.TimeZone;
+import java.math.BigInteger;
 
 public final class Constants {
 
     public static final boolean isTestnet = Nxt.getBooleanProperty("nxt.isTestnet");
     public static final boolean isOffline = Nxt.getBooleanProperty("nxt.isOffline");
     public static final boolean isLightClient = Nxt.getBooleanProperty("nxt.isLightClient");
+    public static final String customLoginWarning = Nxt.getStringProperty("nxt.customLoginWarning", null, false, "UTF-8");
 
     public static final long[] FOUNDATION_MEMBER_IDS = {3977330746712865438L, -1255995780042666937L, -7945280390087411431L, 8639008863476284945L};
 
     public static final String COIN_SYMBOL = "XEL";
     public static final String ACCOUNT_PREFIX = "XEL";
     public static final String PROJECT_NAME = "XEL";
-
     public static final int MAX_NUMBER_OF_TRANSACTIONS = 255;
     public static final int MIN_TRANSACTION_SIZE = 176;
     public static final int MAX_PAYLOAD_LENGTH = MAX_NUMBER_OF_TRANSACTIONS * MIN_TRANSACTION_SIZE;
@@ -40,12 +37,14 @@ public final class Constants {
     public static final long ONE_NXT  =  100000000;
     public static final long TENTH_NXT = 10000000;
     public static final long MAX_BALANCE_NQT = MAX_BALANCE_NXT * ONE_NXT;
-    public static final long INITIAL_BASE_TARGET = 1537228670L;
-    public static final long MAX_BASE_TARGET = MAX_BALANCE_NXT * INITIAL_BASE_TARGET;
+    
+    public static final int BLOCK_TIME = 60;
+    public static final long INITIAL_BASE_TARGET = BigInteger.valueOf(2).pow(63).divide(BigInteger.valueOf(BLOCK_TIME * MAX_BALANCE_NXT)).longValue(); //153722867;
+    public static final long MAX_BASE_TARGET = INITIAL_BASE_TARGET * (isTestnet ? MAX_BALANCE_NXT : 50);
     public static final long MAX_BASE_TARGET_2 = isTestnet ? MAX_BASE_TARGET : INITIAL_BASE_TARGET * 50;
     public static final long MIN_BASE_TARGET = INITIAL_BASE_TARGET * 9 / 10;
-    public static final int MIN_BLOCKTIME_LIMIT = 53;
-    public static final int MAX_BLOCKTIME_LIMIT = 67;
+    public static final int MIN_BLOCKTIME_LIMIT = BLOCK_TIME - 7;
+    public static final int MAX_BLOCKTIME_LIMIT = BLOCK_TIME + 7;
     public static final int BASE_TARGET_GAMMA = 64;
     public static final int MAX_ROLLBACK = Math.max(Nxt.getIntProperty("nxt.maxRollback"), 720);
     public static final int GUARANTEED_BALANCE_CONFIRMATIONS = isTestnet ? Nxt.getIntProperty("nxt.testnetGuaranteedBalanceConfirmations", 750) : 750;
@@ -115,6 +114,7 @@ public final class Constants {
     public static final int TRANSPARENT_FORGING_BLOCK_3 = -1;
     public static final int TRANSPARENT_FORGING_BLOCK_5 = -1;
     public static final int TRANSPARENT_FORGING_BLOCK_6 = isTestnet ? -1 : -1;
+    public static final int TRANSPARENT_FORGING_BLOCK_7 = Integer.MAX_VALUE;
     public static final int TRANSPARENT_FORGING_BLOCK_8 = isTestnet ? -1 : -1;
     public static final int NQT_BLOCK = isTestnet ? -1 : -1;
     public static final int REFERENCED_TRANSACTION_FULL_HASH_BLOCK = isTestnet ? NQT_BLOCK : -1;
@@ -127,12 +127,19 @@ public final class Constants {
     public static final int FXT_BLOCK = isTestnet ? -1 : -1;
 
 
+    public static final int MAX_TAGGED_DATA_NAME_LENGTH = 100;
+    public static final int MAX_TAGGED_DATA_DESCRIPTION_LENGTH = 1000;
+    public static final int MAX_TAGGED_DATA_TAGS_LENGTH = 100;
+    public static final int MAX_TAGGED_DATA_TYPE_LENGTH = 100;
+    public static final int MAX_TAGGED_DATA_CHANNEL_LENGTH = 100;
+    public static final int MAX_TAGGED_DATA_FILENAME_LENGTH = 100;
+    public static final int MAX_TAGGED_DATA_DATA_LENGTH = 42 * 1024;
 
     public static final int CHECKSUM_BLOCK_GENESIS = isTestnet ? 0 : 0;
 
-    public static final int LAST_CHECKSUM_BLOCK = CHECKSUM_BLOCK_GENESIS;
+    public static final int LAST_CHECKSUM_BLOCK = 0;
     // LAST_KNOWN_BLOCK must also be set in html/www/js/nrs.constants.js
-    public static final int LAST_KNOWN_BLOCK = CHECKSUM_BLOCK_GENESIS;
+    public static final int LAST_KNOWN_BLOCK = isTestnet ? 0 : 0;
 
     public static final int[] MIN_VERSION = new int[] {3, 1, 0};
     public static final int[] MIN_PROXY_VERSION = new int[] {3, 1, 0};
@@ -141,28 +148,12 @@ public final class Constants {
 
     public static final boolean correctInvalidFees = Nxt.getBooleanProperty("nxt.correctInvalidFees");
 
-    public static final long EPOCH_BEGINNING;
-    public static MainNetParams MAINNET_PARAMS;
-    static {
-        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        calendar.set(Calendar.YEAR, 2013);
-        calendar.set(Calendar.MONTH, Calendar.NOVEMBER);
-        calendar.set(Calendar.DAY_OF_MONTH, 24);
-        calendar.set(Calendar.HOUR_OF_DAY, 12);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-        EPOCH_BEGINNING = calendar.getTimeInMillis();
-        MAINNET_PARAMS = MainNetParams.get();
-    }
-
-        // Checksum Stuff
+    // Checksum Stuff
     public static final int CHECKSUM_100000 = 100000;
     public static final int CHECKSUM_200000 = 200000;
     public static final int CHECKSUM_300000 = 300000;
     public static final int CHECKSUM_338155 = 338155;
-        // Checksum Stuff end
-
+    // Checksum Stuff end
 
     public static final String ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyz";
     public static final String ALLOWED_CURRENCY_CODE_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";

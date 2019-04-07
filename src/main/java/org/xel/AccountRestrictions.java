@@ -16,12 +16,6 @@
 
 package org.xel;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Map;
-
 import org.xel.Account.ControlType;
 import org.xel.NxtException.AccountControlException;
 import org.xel.VoteWeighting.VotingModel;
@@ -32,6 +26,12 @@ import org.xel.db.DbUtils;
 import org.xel.db.VersionedEntityDbTable;
 import org.xel.util.Convert;
 import org.xel.util.Logger;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Map;
 
 public final class AccountRestrictions {
 

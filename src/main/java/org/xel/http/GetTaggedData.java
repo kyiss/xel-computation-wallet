@@ -24,7 +24,7 @@ import org.json.simple.JSONStreamAware;
 
 import javax.servlet.http.HttpServletRequest;
 
-import static nxt.http.JSONResponses.PRUNED_TRANSACTION;
+import static org.xel.http.JSONResponses.PRUNED_TRANSACTION;
 
 public final class GetTaggedData extends APIServlet.APIRequestHandler {
 

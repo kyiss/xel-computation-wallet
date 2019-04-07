@@ -46,6 +46,7 @@ public final class GetBlock extends APIServlet.APIRequestHandler {
         if (blockValue != null) {
             try {
             	//TODO check
+            	//blockData = Nxt.getBlockchain().getBlock(Convert.parseUnsignedLong(blockValue));
                 if(blockValue.startsWith("-"))
                     blockData = Nxt.getBlockchain().getBlock(Long.parseLong(blockValue));
                 else

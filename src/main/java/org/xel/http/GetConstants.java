@@ -16,11 +16,7 @@
 
 package org.xel.http;
 
-import org.xel.Constants;
-import org.xel.Genesis;
-import org.xel.PhasingPoll;
-import org.xel.TransactionType;
-import org.xel.VoteWeighting;
+import org.xel.*;
 import org.xel.crypto.HashFunction;
 import org.xel.peer.Peer;
 import org.xel.util.JSON;
@@ -44,9 +40,12 @@ public final class GetConstants extends APIServlet.APIRequestHandler {
         static {
             try {
                 JSONObject response = new JSONObject();
+                response.put("coinSymbol", Constants.COIN_SYMBOL);
+                response.put("accountPrefix", Constants.ACCOUNT_PREFIX);
+                response.put("projectName", Constants.PROJECT_NAME);
                 response.put("genesisBlockId", Long.toUnsignedString(Genesis.GENESIS_BLOCK_ID));
                 response.put("genesisAccountId", Long.toUnsignedString(Genesis.CREATOR_ID));
-                response.put("epochBeginning", Constants.EPOCH_BEGINNING);
+                response.put("epochBeginning", Genesis.EPOCH_BEGINNING);
                 response.put("maxBlockPayloadLength", Constants.MAX_PAYLOAD_LENGTH);
                 response.put("maxArbitraryMessageLength", Constants.MAX_ARBITRARY_MESSAGE_LENGTH);
                 response.put("maxPrunableMessageLength", Constants.MAX_PRUNABLE_MESSAGE_LENGTH);
@@ -123,7 +122,7 @@ public final class GetConstants extends APIServlet.APIRequestHandler {
                     peerStates.put(peerState.toString(), peerState.ordinal());
                 }
                 response.put("peerStates", peerStates);
-                response.put("maxTaggedDataDataLength", Constants.MAX_UPLOAD_SERVLET_LENGTH);
+                response.put("maxTaggedDataDataLength", Constants.MAX_TAGGED_DATA_DATA_LENGTH);
 
                 JSONObject requestTypes = new JSONObject();
                 for (Map.Entry<String, APIServlet.APIRequestHandler> handlerEntry : APIServlet.apiRequestHandlers.entrySet()) {

@@ -1604,4 +1604,10 @@ public final class TemporaryComputationBlockchainProcessorImpl implements Blockc
             blockchain.writeUnlock();
         }
     }
+
+	@Override
+	public long getGenesisBlockId() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }

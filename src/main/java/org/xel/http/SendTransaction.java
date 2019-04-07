@@ -70,7 +70,7 @@ public final class SendTransaction extends APIServlet.APIRequestHandler {
 
         JSONObject response = new JSONObject();
 
-        if(comp == false){
+        if(!comp){
             try {
                 Transaction.Builder builder = ParameterParser.parseTransaction(transactionJSON, transactionBytes, prunableAttachmentJSON);
                 Transaction transaction = builder.build();
@@ -95,7 +95,13 @@ public final class SendTransaction extends APIServlet.APIRequestHandler {
     protected boolean requirePost() {
         return true;
     }
-    
+
+/*
+    @Override
+    protected boolean requirePassword() {
+        return true;
+    }
+*/
     @Override
     protected boolean requireBlockchain() {
         return false;

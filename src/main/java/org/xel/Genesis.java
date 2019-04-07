@@ -17,6 +17,11 @@
 
 package org.xel;
 
+import java.util.Calendar;
+import java.util.TimeZone;
+
+import org.bitcoinj.params.MainNetParams;
+
 public final class Genesis {
 
 
@@ -43,6 +48,21 @@ public final class Genesis {
 
     public static final long GENESIS_BLOCK_ID_COMPUTATIONCHAIN = Long.parseUnsignedLong("2351751608427356534");
 
+    public static final long EPOCH_BEGINNING;
+    public static MainNetParams MAINNET_PARAMS;
+    static {
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        calendar.set(Calendar.YEAR, 2013);
+        calendar.set(Calendar.MONTH, Calendar.NOVEMBER);
+        calendar.set(Calendar.DAY_OF_MONTH, 24);
+        calendar.set(Calendar.HOUR_OF_DAY, 12);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        EPOCH_BEGINNING = calendar.getTimeInMillis();
+        MAINNET_PARAMS = MainNetParams.get();
+    }
+    
     private Genesis() {} // never
 
 }

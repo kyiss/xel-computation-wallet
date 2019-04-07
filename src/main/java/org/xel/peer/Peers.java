@@ -1139,6 +1139,11 @@ public final class Peers {
         return getPeers(peer -> !peer.isBlacklisted() && peer.getState() == state && peer.shareAddress()
                 && (!applyPullThreshold || !Peers.enableHallmarkProtection || peer.getWeight() >= Peers.pullThreshold));
     }
+    
+    public static List<Peer> getPublicPeers(final Peer.State state, final boolean applyPullThreshold, Peer.Service s) {
+        return getPeers(peer -> !peer.isBlacklisted() && peer.getState() == state && peer.providesService(s) 
+        		&& (!applyPullThreshold || !Peers.enableHallmarkProtection || peer.getWeight() >= Peers.pullThreshold));
+    }
 
     public static Peer getWeightedPeer(List<Peer> selectedPeers) {
         if (selectedPeers.isEmpty()) {

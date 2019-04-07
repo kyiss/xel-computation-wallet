@@ -62,9 +62,20 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
-import static nxt.http.JSONResponses.*;
+import static org.xel.http.JSONResponses.MISSING_ADMIN_PASSWORD;
+import static org.xel.http.JSONResponses.INCORRECT_ADMIN_PASSWORD;
+import static org.xel.http.JSONResponses.LOCKED_ADMIN_PASSWORD;
+import static org.xel.http.JSONResponses.NO_PASSWORD_IN_CONFIG;
 
 public final class API {
 
@@ -242,7 +253,7 @@ public final class API {
                 gzipHandler.setExcludedPaths("/nxt", "/nxt-proxy");
             }
             gzipHandler.setIncludedMethods("GET", "POST");
-            gzipHandler.setMinGzipSize(nxt.peer.Peers.MIN_COMPRESS_SIZE);
+            gzipHandler.setMinGzipSize(org.xel.peer.Peers.MIN_COMPRESS_SIZE);
             apiHandler.setGzipHandler(gzipHandler);
 
             apiHandler.addServlet(APITestServlet.class, "/test");
@@ -485,7 +496,7 @@ public final class API {
     public static final class XFrameOptionsFilter implements Filter {
 
         @Override
-        public void init(FilterConfig filterConfig) throws ServletException {
+        public void init(FilterConfig filterConfig) {
         }
 
         @Override

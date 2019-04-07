@@ -26,9 +26,9 @@ import org.json.simple.JSONStreamAware;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 
-import static nxt.http.JSONResponses.HASHES_MISMATCH;
-import static nxt.http.JSONResponses.INCORRECT_TRANSACTION;
-import static nxt.http.JSONResponses.UNKNOWN_TRANSACTION;
+import static org.xel.http.JSONResponses.HASHES_MISMATCH;
+import static org.xel.http.JSONResponses.INCORRECT_TRANSACTION;
+import static org.xel.http.JSONResponses.UNKNOWN_TRANSACTION;
 
 public final class VerifyTaggedData extends APIServlet.APIRequestHandler {
 
