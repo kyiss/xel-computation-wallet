@@ -134,6 +134,9 @@ public final class Generator implements Comparable<Generator> {
 
     };
 
+
+
+
     private static int delayCompUntil = 0;
     private static final Runnable generateBlocksThreadComputation = new Runnable() {
 
@@ -141,15 +144,25 @@ public final class Generator implements Comparable<Generator> {
 
         @Override
         public void run() {
-            try {
+            if(Nxt.getBooleanProperty("nxt.enableComputationEngine")) {
                 try {
-                    TemporaryComputationBlockchainImpl.getInstance().updateLock();
                     try {
+                        TemporaryComputationBlockchainImpl.getInstance().updateLock();
+                        try {
 
-                        Block lastBlock = Nxt.getTemporaryComputationBlockchain().getLastBlock();
+                            Block lastBlock = Nxt.getTemporaryComputationBlockchain().getLastBlock();
 
-                        if (lastBlock == null || lastBlock.getHeight() < Constants.LAST_KNOWN_BLOCK) {
-                            return;
+                            if (lastBlock == null || lastBlock.getHeight() < Constants.LAST_KNOWN_BLOCK) {
+                                return;
+                            }
+                            if (Nxt.getEpochTime() - lastBlock.getTimestamp() > 59 && delayCompUntil < Nxt.getEpochTime()) {
+                                TemporaryComputationBlockchainProcessorImpl.getInstance().generateBlock(Nxt.getStringProperty("nxt.compuchainPassphrase"), Nxt.getEpochTime());
+                                delayCompUntil = Nxt.getEpochTime() + Constants.FORGING_DELAY;
+                                return;
+                            }
+
+                        } finally {
+                            TemporaryComputationBlockchainImpl.getInstance().updateUnlock();
                         }
                         if (Nxt.getEpochTime() - lastBlock.getTimestamp() > 59 && delayCompUntil < Nxt.getEpochTime()) {
                             TemporaryComputationBlockchainProcessorImpl.getInstance().generateBlock(Nxt.getStringProperty("nxt.compuchainPassphrase", true), Nxt.getEpochTime());
@@ -160,15 +173,12 @@ public final class Generator implements Comparable<Generator> {
                     } finally {
                         TemporaryComputationBlockchainImpl.getInstance().updateUnlock();
                     }
-                } catch (Exception e) {
-                    Logger.logMessage("Error in block generation thread (computation)", e);
+                } catch (Throwable t) {
+                    Logger.logErrorMessage("CRITICAL ERROR. PLEASE REPORT TO THE DEVELOPERS (computation).\n" + t.toString());
+                    t.printStackTrace();
+                    System.exit(1);
                 }
-            } catch (Throwable t) {
-                Logger.logErrorMessage("CRITICAL ERROR. PLEASE REPORT TO THE DEVELOPERS (computation).\n" + t.toString());
-                t.printStackTrace();
-                System.exit(1);
             }
-
         }
 
     };

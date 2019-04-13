@@ -266,6 +266,15 @@ public final class ParameterParser {
     }
 
 
+    public static long getQuantityQNT(HttpServletRequest req) throws ParameterException {
+        return getLong(req, "quantityQNT", 1L, Constants.MAX_ASSET_QUANTITY_QNT, true);
+    }
+
+    public static long getAmountNQTPerQNT(HttpServletRequest req) throws ParameterException {
+        return getLong(req, "amountNQTPerQNT", 1L, Constants.MAX_BALANCE_NQT, true);
+    }
+
+
     public static EncryptedData getEncryptedData(HttpServletRequest req, String messageType) throws ParameterException {
         String dataString = Convert.emptyToNull(req.getParameter(messageType + "Data"));
         String nonceString = Convert.emptyToNull(req.getParameter(messageType + "Nonce"));

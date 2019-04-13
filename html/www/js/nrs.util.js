@@ -586,7 +586,6 @@ var NRS = (function (NRS, $, undefined) {
 
     NRS.baseTargetPercent = function(block) {
         if (block) {
-            //INITIAL_BASE_TARGET = 153722867
             return Math.round(block.baseTarget / 153722867 * 100)
         } else {
             return 0;
@@ -922,9 +921,9 @@ var NRS = (function (NRS, $, undefined) {
         var locale = NRS.getLocale();
         var amount = NRS.formatAmount(strAmount, round).split(locale.decimal);
 		if (amount.length == 2) {
-            return amount[0] + "" + locale.decimal + amount[1] ;
+            return amount[0] + "<span style='font-size:12px'>" + locale.decimal + amount[1] + "</span>";
 		} else {
-            return amount[0]+ "" + locale.decimal + '0';
+            return amount[0];
 		}
 	};
 

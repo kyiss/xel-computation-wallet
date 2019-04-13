@@ -24,15 +24,6 @@ var NRS = (function(NRS, $) {
 	NRS.averageBlockGenerationTime = 60;
 
 	NRS.getBlock = function(id, callback, pageRequest) {
-        if(id == null){
-            var stack = new Error().stack;
-              console.log("PRINTING CALL STACK");
-              console.log( stack );
-            return;
-        } var stack = new Error().stack;
-                       console.log("PRINTING CALL STACK");
-                       console.log( stack );
-	    console.log("getBlock" + (pageRequest ? "+" : "") + " FOR BLOCK " + id);
 		NRS.sendRequest("getBlock" + (pageRequest ? "+" : ""), {
 			"block": id
 		}, function(response) {
@@ -48,8 +39,6 @@ var NRS = (function(NRS, $) {
 	};
 
 	NRS.handleInitialBlocks = function(response) {
-        console.log("INITIAL BLOCKS");
-        console.log(response);
 		NRS.blocks.push(response);
 		if (NRS.blocks.length < 10 && response.previousBlock) {
 			NRS.getBlock(response.previousBlock, NRS.handleInitialBlocks);
@@ -93,8 +82,6 @@ var NRS = (function(NRS, $) {
 	};
 
 	NRS.handleNewBlocks = function(response) {
-	    console.log("NEW BLOCKS");
-        console.log(response);
 		if (NRS.downloadingBlockchain) {
 			//new round started...
 			if (NRS.tempBlocks.length == 0 && NRS.getLastBlock() != response.block) {
@@ -146,7 +133,7 @@ var NRS = (function(NRS, $) {
 	NRS.updateDashboardLastBlock = function(block) {
 		$("#nrs_current_block_time").empty().append(NRS.formatTimestampTime(block.timestamp));
 		$(".nrs_current_block").empty().append(NRS.escapeRespStr(block.height));
-		$("#sidebar_block_link_upper").empty().append(NRS.escapeRespStr(block.height));
+		$("#sidebar_block_link_upper").empty().append(NRS.escapeRespStr(NRS.blocks[0].height));
 
 
 	};

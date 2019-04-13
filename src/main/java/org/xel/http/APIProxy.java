@@ -56,6 +56,17 @@ public class APIProxy {
         final EnumSet<APITag> notForwardedTags = EnumSet.of(APITag.DEBUG, APITag.NETWORK);
 
         for (APIEnum api : APIEnum.values()) {
+            if(!Nxt.getBooleanProperty("nxt.enableComputationEngine"))
+            {
+                if(api.equals(APIEnum.GET_WORK) ||
+                        api.equals(APIEnum.CREATE_WORK) ||
+                        api.equals(APIEnum.GET_MINEABLE_WORK) ||
+                        api.equals(APIEnum.CANCEL_WORK) ||
+                        api.equals(APIEnum.SUBMIT_SOLUTION) ||
+                        api.equals(APIEnum.LONGPOLL)) {
+                    continue;
+                }
+            }
             APIServlet.APIRequestHandler handler = api.getHandler();
             if (handler.requireBlockchain() && !Collections.disjoint(handler.getAPITags(), notForwardedTags)) {
                 requests.add(api.getName());

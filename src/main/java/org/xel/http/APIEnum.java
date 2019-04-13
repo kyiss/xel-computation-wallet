@@ -31,13 +31,14 @@ public enum APIEnum {
     REDEEM("redeem", Redeem.instance),
     GET_UNCLAIMED_REDEEMS("getUnclaimedRedeems", GetUnclaimedRedeems.instance),
     GET_FROM_FAUCET("faucet", Faucet.instance),
+    LASTBLOCK("getLastBlockId",  GetLastBlockId.instance),
+    // COMPUTATION SPECIFIC
     GET_WORK("getWork", GetWork.instance),
     CREATE_WORK("createWork", CreateWork.instance),
     GET_MINEABLE_WORK("getMineableWork", GetMineableWork.instance),
     CANCEL_WORK("cancelWork", CancelWork.instance),
     SUBMIT_SOLUTION("submitSolution", SubmitSolution.instance),
     LONGPOLL("longpoll",  Longpoll.instance),
-    LASTBLOCK("getLastBlockId",  GetLastBlockId.instance),
     /* ELASTIC SPECIFIC END */
 
     APPROVE_TRANSACTION("approveTransaction", ApproveTransaction.instance),

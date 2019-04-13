@@ -527,7 +527,7 @@ public final class JSONResponses {
         response.put("successMessage", "Sorry, but you can use the faucet only once every " + error + " seconds");
         return JSON.prepare(response);
     }
-    
+
     private JSONResponses() {} // never
 
     public static final JSONStreamAware MISSING_XEL_PER_POW = missing("correct xel per pow value");

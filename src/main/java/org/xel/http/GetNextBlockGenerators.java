@@ -72,6 +72,7 @@ public final class GetNextBlockGenerators extends APIServlet.APIRequestHandler {
         } catch (RuntimeException e) {
             limit = Integer.MAX_VALUE;
         }
+
         return response;
     }
 
