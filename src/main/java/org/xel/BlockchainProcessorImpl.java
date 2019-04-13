@@ -1455,7 +1455,8 @@ final class BlockchainProcessorImpl implements BlockchainProcessor {
         }
     }
 
-    private void pushBlock(final BlockImpl block) throws BlockNotAcceptedException {
+    // FIXEME should not be public
+    public void pushBlock(final BlockImpl block) throws BlockNotAcceptedException {
 
         int curTime = Nxt.getEpochTime();
 

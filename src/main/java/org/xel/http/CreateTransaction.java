@@ -283,8 +283,9 @@ abstract class CreateTransaction extends APIServlet.APIRequestHandler {
 
     }
 
+    // FIXME should be final
     @Override
-    protected final boolean requirePost() {
+    protected boolean requirePost() {
         return true;
     }
 

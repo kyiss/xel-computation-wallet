@@ -302,8 +302,7 @@ public class MessageEncoder {
                 GetLastBlockId.lastBlockId = block.getId();
                 paymentProcessor(block);
             }, BlockchainProcessor.Event.AFTER_BLOCK_APPLY);
-        }
-        if(Nxt.getBooleanProperty("nxt.enableComputationEngine")) {
+
             Nxt.getTemporaryComputationBlockchainProcessor().addListener(block -> {
                 GetLastBlockId.lastBlockIdComp = block.getId();
                 processBlockInternal(block);

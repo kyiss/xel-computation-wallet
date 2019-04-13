@@ -299,8 +299,9 @@ public interface Appendix {
             buffer.put(message);
         }
 
+        // FIXME should not be public
         @Override
-        void putMyJSON(JSONObject json) {
+        public void putMyJSON(JSONObject json) {
             json.put("message", Convert.toString(message, isText));
             json.put("messageIsText", isText);
         }

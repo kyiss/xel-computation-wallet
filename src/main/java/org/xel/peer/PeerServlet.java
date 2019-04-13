@@ -68,7 +68,7 @@ public final class PeerServlet extends WebSocketServlet {
         map.put("processBlock", ProcessBlock.instance);
         map.put("processTransactions", ProcessTransactions.instance);
 
-        if(Nxt.getBooleanProperty("nxt.enableComputationBlockchainRedirector") || Nxt.getBooleanProperty("nxt.enableComputationEngine")){
+        if(Nxt.getBooleanProperty("nxt.enableComputationEngine")){
             map.put("getCumulativeDifficultyComputation", GetCumulativeDifficultyComputation.instance);
             map.put("getMilestoneBlockIdsComputation", GetMilestoneBlockIdsComputation.instance);
             map.put("getNextBlockIdsComputation", GetNextBlockIdsComputation.instance);

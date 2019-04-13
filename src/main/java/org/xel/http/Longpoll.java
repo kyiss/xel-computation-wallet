@@ -85,9 +85,6 @@ final class ExpiringListPointer {
 public final class Longpoll extends APIServlet.APIRequestHandler {
 	static boolean allowLongpollRelaxed = Nxt.getBooleanProperty("nxt.longPollFromAnywhere");
 
-	/** Blockchain processor */
-	private static final BlockchainProcessor blockchainProcessor = Nxt.getBlockchainProcessor();
-
 	private static final int waitTimeValue = 5000;
 	private static final int garbageTimeout = 10000;
 	private static final int expireTime = 25000;
@@ -100,21 +97,21 @@ public final class Longpoll extends APIServlet.APIRequestHandler {
 
 	private Longpoll() {
 		super(new APITag[] { APITag.AE }, "nil");
-		TemporaryComputationBlockchainProcessorImpl.getInstance().blockListeners.addListener(block -> {
+		Nxt.getTemporaryComputationBlockchainProcessor().addListener(block -> {
 			final String event = "block " + block.getHeight();
 			final ArrayList<String> list = new ArrayList<>();
 			list.add(event);
 			Longpoll.instance.addEvents(list);
 		}, BlockchainProcessor.Event.BLOCK_SCANNED_COMPUTATION);
 
-		TemporaryComputationBlockchainProcessorImpl.getInstance().blockListeners.addListener(block -> {
+		Nxt.getTemporaryComputationBlockchainProcessor().addListener(block -> {
 			final String event = "new block (" + block.getHeight() + ")";
 			final ArrayList<String> list = new ArrayList<>();
 			list.add(event);
 			Longpoll.instance.addEvents(list);
 		}, BlockchainProcessor.Event.BLOCK_PUSHED_COMPUTATION);
 
-		blockchainProcessor.addListener(t -> {
+		Nxt.getTransactionProcessor().addListener(t -> {
 			final String event = "broadcast transaction";
 			final ArrayList<String> list = new ArrayList<>();
 			list.add(event);

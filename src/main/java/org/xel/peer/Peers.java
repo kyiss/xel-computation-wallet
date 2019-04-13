@@ -271,7 +271,7 @@ public final class Peers {
             json.put("apiSSLPort", API.openAPISSLPort);
             servicesList.add(Peer.Service.API_SSL);
         }
-        if (Nxt.getBooleanProperty("nxt.enableComputationBlockchainRedirector") || Nxt.getBooleanProperty("nxt.enableComputationEngine")) {
+        if (Nxt.getBooleanProperty("nxt.enableComputationEngine")) {
             servicesList.add(Peer.Service.COMPUTATION_REDIRECTOR);
         }
 

@@ -363,7 +363,8 @@ public final class JSONData {
         return json;
     }
 
-    static JSONObject unconfirmedTransaction(Transaction transaction) {
+    // FIXME should not be public
+    public static JSONObject unconfirmedTransaction(Transaction transaction) {
         return unconfirmedTransaction(transaction, null);
     }
 

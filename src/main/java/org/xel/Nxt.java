@@ -350,7 +350,9 @@ public final class Nxt {
         Users.shutdown();
         ThreadPool.shutdown();
         BlockchainProcessorImpl.getInstance().shutdown();
-        TemporaryComputationBlockchainProcessorImpl.getInstance().shutdown();
+        if(Nxt.getBooleanProperty("nxt.enableComputationEngine")) {
+        	TemporaryComputationBlockchainProcessorImpl.getInstance().shutdown();
+        }
         Peers.shutdown();
         Db.shutdown();
         Logger.logShutdownMessage("Nxt server " + VERSION + " stopped.");
@@ -373,8 +375,12 @@ public final class Nxt {
                 setServerStatus(ServerStatus.BEFORE_DATABASE, null);
                 Db.init();
                 setServerStatus(ServerStatus.AFTER_DATABASE, null);
-                TemporaryComputationTransactionProcessorImpl.getInstance();
-                TemporaryComputationBlockchainProcessorImpl.getInstance();
+                
+                if(Nxt.getBooleanProperty("nxt.enableComputationEngine")) {
+                	TemporaryComputationTransactionProcessorImpl.getInstance();
+                	TemporaryComputationBlockchainProcessorImpl.getInstance();
+                }
+                
                 TransactionProcessorImpl.getInstance();
                 BlockchainProcessorImpl.getInstance();
                 Account.init();
@@ -384,8 +390,12 @@ public final class Nxt {
                 PhasingPoll.init();
                 Redeem.init();
                 Vote.init();
-                Work.init();
-                PowAndBounty.init();
+                
+                if(Nxt.getBooleanProperty("nxt.enableComputationEngine")) {
+                	Work.init();
+                	PowAndBounty.init();
+                }
+                
                 PhasingVote.init();
                 PrunableMessage.init();
                 TaggedData.init();
@@ -396,7 +406,11 @@ public final class Nxt {
                 API.init();
                 Users.init();
                 DebugTrace.init();
-                AlternativeChainPubkeys.init();
+                
+                if(Nxt.getBooleanProperty("nxt.enableComputationEngine")) {
+                	AlternativeChainPubkeys.init();
+                }
+                
                 int timeMultiplier = (Constants.isTestnet && Constants.isOffline) ? Math.max(Nxt.getIntProperty("nxt.timeMultiplier"), 1) : 1;
                 ThreadPool.start(timeMultiplier);
                 if (timeMultiplier > 1) {
@@ -408,24 +422,25 @@ public final class Nxt {
                 } catch (InterruptedException ignore) {}
                 testSecureRandom();
                 long currentTime = System.currentTimeMillis();
+                
+				if(Nxt.getBooleanProperty("nxt.enableComputationEngine")) {
+                    // At this point we can catch up work related stuff
+                    Logger.logInfoMessage("STARTED: Catching up work related transaction history.");
+                    MessageEncoder.init();
 
-                // At this point we can catch up work related stuff
-                Logger.logInfoMessage("STARTED: Catching up work related transaction history.");
-                MessageEncoder.init();
-
-                if (MessageEncoder.useComputationEngine && !JUnitEnvironment.isJUnitTest()) {
-                    Logger.logInfoMessage("Computation engine is activated, we will perform a test now to see if it works properly.");
-                    try {
-                        TestVm2.verifyItIsWorking();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Logger.logInfoMessage("ERROR: The computation engine does not work properly, are you sure you have set up xel_miners in the work/ directory correctly?");
-                        System.exit(1);
+                    if (MessageEncoder.useComputationEngine && !JUnitEnvironment.isJUnitTest()) {
+                        Logger.logInfoMessage("Computation engine is activated, we will perform a test now to see if it works properly.");
+                        try {
+                            TestVm2.verifyItIsWorking();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Logger.logInfoMessage("ERROR: The computation engine does not work properly, are you sure you have set up xel_miners in the work/ directory correctly?");
+                            System.exit(1);
+                        }
+                    } else {
+                        Logger.logInfoMessage("Computation engine is deactivated. You do not need that if you are just supporting the network.");
                     }
-                } else {
-                    Logger.logInfoMessage("Computation engine is deactivated. You do not need that if you are just supporting the network.");
-                }
-
+				}
 
                 Logger.logMessage("Initialization took " + (currentTime - startTime) / 1000 + " seconds");
                 Logger.logMessage("Nxt server " + VERSION + " started successfully.");
@@ -470,10 +485,10 @@ public final class Nxt {
       };
 
       for (String propertyName : systemProperties) {
-    	  String propertyValue;
-    	  if ((propertyValue = getStringProperty(propertyName)) != null) {
-    		  System.setProperty(propertyName, propertyValue);
-    	  }
+        String propertyValue;
+        if ((propertyValue = getStringProperty(propertyName)) != null) {
+          System.setProperty(propertyName, propertyValue);
+        }
       }
     }
 
