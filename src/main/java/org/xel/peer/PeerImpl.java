@@ -881,7 +881,7 @@ final class PeerImpl implements Peer {
     public boolean isOpenAPI() {
         return providesService(Peer.Service.API) || providesService(Peer.Service.API_SSL);
     }
-
+	
     @Override
     public boolean isComputationRedirectorPeer() {
         return providesService(Service.COMPUTATION_REDIRECTOR);

@@ -412,7 +412,7 @@ public final class TemporaryComputationTransactionProcessorImpl implements Trans
             }
             transaction.validateComputational();
             UnconfirmedTransaction unconfirmedTransaction = new UnconfirmedTransaction((TransactionImpl) transaction, System.currentTimeMillis());
-            boolean broadcastLater = TemporaryComputationBlockchainProcessorImpl.getInstance().isProcessingBlock();
+            boolean broadcastLater = Nxt.getTemporaryComputationBlockchainProcessor().isProcessingBlock();
             if (broadcastLater) {
                 waitingTransactions.add(unconfirmedTransaction);
                 broadcastedTransactions.add((TransactionImpl) transaction);

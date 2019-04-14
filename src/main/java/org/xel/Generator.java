@@ -147,7 +147,7 @@ public final class Generator implements Comparable<Generator> {
             if(Nxt.getBooleanProperty("nxt.enableComputationEngine")) {
                 try {
                     try {
-                        TemporaryComputationBlockchainImpl.getInstance().updateLock();
+                        Nxt.getTemporaryComputationBlockchain().updateLock();
                         try {
 
                             Block lastBlock = Nxt.getTemporaryComputationBlockchain().getLastBlock();
@@ -156,13 +156,13 @@ public final class Generator implements Comparable<Generator> {
                                 return;
                             }
                             if (Nxt.getEpochTime() - lastBlock.getTimestamp() > 59 && delayCompUntil < Nxt.getEpochTime()) {
-                                TemporaryComputationBlockchainProcessorImpl.getInstance().generateBlock(Nxt.getStringProperty("nxt.compuchainPassphrase"), Nxt.getEpochTime());
+                                Nxt.getTemporaryComputationBlockchainProcessor().generateBlock(Nxt.getStringProperty("nxt.compuchainPassphrase"), Nxt.getEpochTime());
                                 delayCompUntil = Nxt.getEpochTime() + Constants.FORGING_DELAY;
                                 return;
                             }
 
                         } finally {
-                            TemporaryComputationBlockchainImpl.getInstance().updateUnlock();
+                        	Nxt.getTemporaryComputationBlockchain().updateUnlock();
                         }
                         if (Nxt.getEpochTime() - lastBlock.getTimestamp() > 59 && delayCompUntil < Nxt.getEpochTime()) {
                             TemporaryComputationBlockchainProcessorImpl.getInstance().generateBlock(Nxt.getStringProperty("nxt.compuchainPassphrase", true), Nxt.getEpochTime());

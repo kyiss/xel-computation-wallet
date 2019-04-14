@@ -934,12 +934,12 @@ public final class TemporaryComputationBlockchainProcessorImpl implements Blockc
                 lastBlock = popOffTo(previousBlock).get(0);
                 try {
                     pushBlock(block);
-                    TemporaryComputationTransactionProcessorImpl.getInstance().processLater(lastBlock.getTransactions());
+                    Nxt.getTemporaryComputationTransactionProcessor().processLater(lastBlock.getTransactions());
                     Logger.logDebugMessage("Last block (alternative computation) " + lastBlock.getStringId() + " was replaced by " + block.getStringId());
                 } catch (BlockNotAcceptedException e) {
                     Logger.logDebugMessage("Replacement block (alternative computation) failed to be accepted, pushing back our last block");
                     pushBlock(lastBlock);
-                    TemporaryComputationTransactionProcessorImpl.getInstance().processLater(block.getTransactions());
+                    Nxt.getTemporaryComputationTransactionProcessor().processLater(block.getTransactions());
                 }
             } finally {
                 blockchain.writeUnlock();
@@ -1072,7 +1072,7 @@ public final class TemporaryComputationBlockchainProcessorImpl implements Blockc
 
                 block.setPreviousComputational(previousLastBlock);
                 blockListeners.notify(block, Event.BEFORE_BLOCK_ACCEPT_COMPUTATION);
-                TemporaryComputationTransactionProcessorImpl.getInstance().requeueAllUnconfirmedTransactions();
+                Nxt.getTemporaryComputationTransactionProcessor().requeueAllUnconfirmedTransactions();
                 addBlock(block);
                 accept(block, duplicates);
 

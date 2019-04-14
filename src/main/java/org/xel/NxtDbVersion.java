@@ -1189,7 +1189,7 @@ class NxtDbVersion extends DbVersion {
                 apply("CREATE INDEX IF NOT EXISTS asset_dividend_asset_id_idx ON asset_dividend (asset_id, height DESC)");
             case 489:
                 apply("CREATE INDEX IF NOT EXISTS asset_dividend_height_idx ON asset_dividend (height)");
-                // Here, the work related stuff begins
+                // Here, the xel computation related data begins
             case 490:
                 apply("CREATE TABLE IF NOT EXISTS work (db_id IDENTITY, cap_number_pow INT NOT NULL, " +
                         "closing_timestamp " +

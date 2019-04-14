@@ -253,13 +253,13 @@ public final class Nxt {
     public static Boolean getBooleanProperty(String name) {
         String value = properties.getProperty(name);
         if (Boolean.TRUE.toString().equals(value)) {
-            Logger.logMessage(name + " = \"true\"");
+            //Logger.logMessage(name + " = \"true\"");
             return true;
         } else if (Boolean.FALSE.toString().equals(value)) {
-            Logger.logMessage(name + " = \"false\"");
+            //Logger.logMessage(name + " = \"false\"");
             return false;
         }
-        Logger.logMessage(name + " not defined, assuming false");
+        //Logger.logMessage(name + " not defined, assuming false");
         return false;
     }
 
@@ -447,7 +447,15 @@ public final class Nxt {
 				}
 
                 Logger.logMessage("Initialization took " + (currentTime - startTime) / 1000 + " seconds");
-                Logger.logMessage("Nxt server " + VERSION + " started successfully.");
+                Logger.logMessage("XEL server " + VERSION + " started successfully.");
+
+                if(Nxt.getBooleanProperty("nxt.enableComputationEngine")) {
+                    Logger.logMessage("XEL Computation Engine is enabled");
+                }
+                else {
+                    Logger.logMessage("XEL Computation Engine is disabled");
+                }
+
                 Logger.logMessage("Copyright © 2013-2016 The Nxt Core Developers.");
                 Logger.logMessage("Copyright © 2016-2017 Jelurida IP B.V.");
                 Logger.logMessage("Copyright © 2019 XEL Development Team.");
@@ -459,6 +467,7 @@ public final class Nxt {
                 if (isDesktopApplicationEnabled()) {
                     launchDesktopApplication();
                 }
+
                 if (Constants.isTestnet) {
                     Logger.logMessage("RUNNING ON TESTNET - DO NOT USE REAL ACCOUNTS!");
                 }
