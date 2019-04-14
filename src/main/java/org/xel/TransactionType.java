@@ -38,7 +38,7 @@ import java.util.*;
 
 public abstract class TransactionType {
 
-    public static final byte TYPE_PAYMENT = 0;
+    private static final byte TYPE_PAYMENT = 0;
     private static final byte TYPE_MESSAGING = 1;
     private static final byte TYPE_ACCOUNT_CONTROL = 2;
     private static final byte TYPE_DATA = 3;
@@ -203,11 +203,7 @@ public abstract class TransactionType {
     }
 
     static boolean isDuplicate(TransactionType uniqueType, String key, Map<TransactionType, Map<String, Integer>> duplicates, int maxCount) {
-        Map<String,Integer> typeDuplicates = duplicates.get(uniqueType);
-        if (typeDuplicates == null) {
-            typeDuplicates = new HashMap<>();
-            duplicates.put(uniqueType, typeDuplicates);
-        }
+        Map<String, Integer> typeDuplicates = duplicates.computeIfAbsent(uniqueType, k -> new HashMap<>());
         Integer currentCount = typeDuplicates.get(key);
         if (currentCount == null) {
             typeDuplicates.put(key, maxCount > 0 ? 1 : 0);
@@ -495,7 +491,7 @@ public abstract class TransactionType {
                     if (result == null) throw new NxtException.NotValidException("Invalid signatures provided");
 
                     try {
-                        final String add = result.toAddress(Constants.MAINNET_PARAMS).toString();
+                        final String add = result.toAddress(Genesis.MAINNET_PARAMS).toString();
                         signedBy.add(add);
                     }
                     catch(Exception e){
@@ -673,7 +669,7 @@ public abstract class TransactionType {
             }
 
             @Override
-            Attachment.MessagingPollCreation parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
+            Attachment.MessagingPollCreation parseAttachment(JSONObject attachmentData) {
                 return new Attachment.MessagingPollCreation(attachmentData);
             }
 
@@ -685,7 +681,8 @@ public abstract class TransactionType {
 
             @Override
             void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
-
+				
+				/*
                 // Only whitelisted IDs may create votes
                 long senderID = transaction.getSenderId();
                 boolean approved = false;
@@ -698,6 +695,7 @@ public abstract class TransactionType {
                 if(!approved){
                     throw new NxtException.NotValidException("Only foundation members are allowed to create polls");
                 }
+				*/
 
                 Attachment.MessagingPollCreation attachment = (Attachment.MessagingPollCreation) transaction.getAttachment();
 
@@ -788,7 +786,7 @@ public abstract class TransactionType {
             }
 
             @Override
-            Attachment.MessagingVoteCasting parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
+            Attachment.MessagingVoteCasting parseAttachment(JSONObject attachmentData) {
                 return new Attachment.MessagingVoteCasting(attachmentData);
             }
 
@@ -892,7 +890,7 @@ public abstract class TransactionType {
             }
 
             @Override
-            Attachment.MessagingPhasingVoteCasting parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
+            Attachment.MessagingPhasingVoteCasting parseAttachment(JSONObject attachmentData) {
                 return new Attachment.MessagingPhasingVoteCasting(attachmentData);
             }
 
@@ -1017,7 +1015,7 @@ public abstract class TransactionType {
             }
 
             @Override
-            Attachment.MessagingAccountInfo parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
+            Attachment.MessagingAccountInfo parseAttachment(JSONObject attachmentData) {
                 return new Attachment.MessagingAccountInfo(attachmentData);
             }
 
@@ -1098,7 +1096,7 @@ public abstract class TransactionType {
             }
 
             @Override
-            Attachment.AccountControlEffectiveBalanceLeasing parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
+            Attachment.AccountControlEffectiveBalanceLeasing parseAttachment(JSONObject attachmentData) {
                 return new Attachment.AccountControlEffectiveBalanceLeasing(attachmentData);
             }
 
@@ -1180,7 +1178,7 @@ public abstract class TransactionType {
                 long maxFees = attachment.getMaxFees();
                 long maxFeesLimit = (attachment.getPhasingParams().getVoteWeighting().isBalanceIndependent() ? 3 : 22) * Constants.TENTH_NXT;
                 if (maxFees < 0 || (maxFees > 0 && maxFees < maxFeesLimit) || maxFees > Constants.MAX_BALANCE_NQT) {
-                    throw new NxtException.NotValidException(String.format("Invalid max fees %f XEL", ((double)maxFees)/Constants.ONE_NXT));
+                    throw new NxtException.NotValidException(String.format("Invalid max fees %f %s", ((double)maxFees)/Constants.ONE_NXT, Constants.COIN_SYMBOL));
                 }
                 short minDuration = attachment.getMinDuration();
                 if (minDuration < 0 || (minDuration > 0 && minDuration < 3) || minDuration >= Constants.MAX_PHASING_DURATION) {
@@ -1290,16 +1288,12 @@ public abstract class TransactionType {
             }
 
             @Override
-            Attachment.TaggedDataUpload parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
+            Attachment.TaggedDataUpload parseAttachment(JSONObject attachmentData) {
                 return new Attachment.TaggedDataUpload(attachmentData);
             }
 
             @Override
             void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
-
-                // Disable Data Cloud in light version
-                if(1==1) throw new NxtException.NotYetEnabledException("Data Cloud not yet enabled");
-
                 Attachment.TaggedDataUpload attachment = (Attachment.TaggedDataUpload) transaction.getAttachment();
                 if (attachment.getData() == null && Nxt.getEpochTime() - transaction.getTimestamp() < Constants.MIN_PRUNABLE_LIFETIME) {
                     throw new NxtException.NotCurrentlyValidException("Data has been pruned prematurely");
@@ -1365,15 +1359,12 @@ public abstract class TransactionType {
             }
 
             @Override
-            Attachment.TaggedDataExtend parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
+            Attachment.TaggedDataExtend parseAttachment(JSONObject attachmentData) {
                 return new Attachment.TaggedDataExtend(attachmentData);
             }
 
             @Override
             void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
-
-                if(1==1) throw new NxtException.NotCurrentlyValidException("Datacloud is disabled in light wallet mode");
-
                 Attachment.TaggedDataExtend attachment = (Attachment.TaggedDataExtend) transaction.getAttachment();
                 if ((attachment.jsonIsPruned() || attachment.getData() == null) && Nxt.getEpochTime() - transaction.getTimestamp() < Constants.MIN_PRUNABLE_LIFETIME) {
                     throw new NxtException.NotCurrentlyValidException("Data has been pruned prematurely");

@@ -45,6 +45,8 @@ public interface BlockchainProcessor extends Observable<Block,BlockchainProcesso
     
     void registerComputationalDerivedTable(ComputationalDerivedDbTable table);
 
+    void generateBlock(String secretPhrase, int blockTimestamp) throws BlockNotAcceptedException;
+
     Peer getLastBlockchainFeeder();
 
     int getLastBlockchainFeederHeight();
@@ -58,8 +60,6 @@ public interface BlockchainProcessor extends Observable<Block,BlockchainProcesso
     int getMinRollbackHeight();
 
     int getInitialScanHeight();
-
-    void generateBlock(String secretPhrase, int blockTimestamp) throws BlockNotAcceptedException;
 
     void processPeerBlock(JSONObject request) throws NxtException;
 
@@ -80,6 +80,8 @@ public interface BlockchainProcessor extends Observable<Block,BlockchainProcesso
     int restorePrunedData();
 
     Transaction restorePrunedTransaction(long transactionId);
+
+    long getGenesisBlockId();
 
     class BlockNotAcceptedException extends NxtException {
 

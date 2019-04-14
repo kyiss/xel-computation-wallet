@@ -28,7 +28,6 @@ import org.xel.peer.Peers;
 import org.xel.util.*;
 
 import java.math.BigInteger;
-import java.nio.channels.AcceptPendingException;
 import java.security.MessageDigest;
 import java.sql.*;
 import java.util.*;
@@ -66,6 +65,7 @@ public final class TemporaryComputationBlockchainProcessorImpl implements Blockc
     private volatile boolean isDownloading;
     private volatile boolean isProcessingBlock;
     private volatile boolean alreadyInitialized = false;
+    private volatile long genesisBlockId = Genesis.GENESIS_BLOCK_ID_COMPUTATIONCHAIN;
 
     private final Runnable getMoreBlocksThread = new Runnable() {
 
@@ -862,6 +862,11 @@ public final class TemporaryComputationBlockchainProcessorImpl implements Blockc
     @Override
     public Transaction restorePrunedTransaction(long transactionId) {
         return null;
+    }
+
+    @Override
+    public long getGenesisBlockId() {
+        return genesisBlockId;
     }
 
     private void doTrimDerivedTables() {

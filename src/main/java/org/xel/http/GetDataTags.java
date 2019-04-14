@@ -16,7 +16,6 @@
 
 package org.xel.http;
 
-import org.xel.NxtException;
 import org.xel.TaggedData;
 import org.xel.db.DbIterator;
 import org.json.simple.JSONArray;
@@ -34,7 +33,7 @@ public final class GetDataTags extends APIServlet.APIRequestHandler {
     }
 
     @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
+    protected JSONStreamAware processRequest(HttpServletRequest req) {
         int firstIndex = ParameterParser.getFirstIndex(req);
         int lastIndex = ParameterParser.getLastIndex(req);
 

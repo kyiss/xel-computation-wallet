@@ -120,10 +120,16 @@ public final class SendTransaction extends APIServlet.APIRequestHandler {
 		}
 
         return response;
+
     }
 
     @Override
     protected boolean requirePost() {
+        return true;
+    }
+
+    @Override
+    protected boolean requirePassword() {
         return true;
     }
 

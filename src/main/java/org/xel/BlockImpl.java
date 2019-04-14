@@ -41,9 +41,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
 
-import static org.xel.TransactionType.SUBTYPE_PAYMENT_REDEEM;
-import static org.xel.TransactionType.TYPE_PAYMENT;
-
 final class BlockImpl implements Block {
 
     private final int version;
@@ -98,7 +95,6 @@ final class BlockImpl implements Block {
         this.generationSignature = generationSignature;
         this.blockSignature = blockSignature;
         this.previousBlockHash = previousBlockHash;
-
         if (transactions != null) {
             this.blockTransactions = Collections.unmodifiableList(transactions);
         }
@@ -324,12 +320,12 @@ final class BlockImpl implements Block {
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof BlockImpl && this.getId() == ((BlockImpl) o).getId();
+        return o instanceof BlockImpl && this.getId() == ((BlockImpl)o).getId();
     }
 
     @Override
     public int hashCode() {
-        return (int) (getId() ^ (getId() >>> 32));
+        return (int)(getId() ^ (getId() >>> 32));
     }
 
     @Override
@@ -425,7 +421,7 @@ final class BlockImpl implements Block {
                 throw new NxtException.NotValidException("Invalid block signature");
             }
             return block;
-        } catch (NxtException.NotValidException | RuntimeException e) {
+        } catch (NxtException.NotValidException|RuntimeException e) {
             Logger.logDebugMessage("Failed to parse block: " + blockData.toJSONString());
             throw e;
         }
@@ -512,13 +508,12 @@ final class BlockImpl implements Block {
     private volatile boolean hasValidSignature = false;
 
     private boolean checkSignature() {
-        if (!hasValidSignature) {
+        if (! hasValidSignature) {
             byte[] data = Arrays.copyOf(bytes(), bytes.length - 64);
             hasValidSignature = blockSignature != null && Crypto.verify(blockSignature, data, getGeneratorPublicKey(), version >= 3);
         }
         return hasValidSignature;
     }
-
 
     boolean verifyGenerationSignature() throws BlockchainProcessor.BlockOutOfOrderException {
 
@@ -530,7 +525,7 @@ final class BlockImpl implements Block {
             }
 
             if(previousBlock.getHeight()<Constants.ALLOW_FAKE_FORGING_ON_REDEEM_UNTIL_BLOCK)
-                for (final Transaction t : this.blockTransactions) if (t.getType().getType() == TYPE_PAYMENT && t.getType().getSubtype() == SUBTYPE_PAYMENT_REDEEM) return true;
+                for (final Transaction t : this.blockTransactions) if (TransactionType.isZeroFee(t)) return true;
 
 
             if (version == 1 && !Crypto.verify(generationSignature, previousBlock.generationSignature, getGeneratorPublicKey(), false)) {
@@ -636,13 +631,13 @@ final class BlockImpl implements Block {
                 }
                 totalBackFees += backFees[i];
                 Account previousGeneratorAccount = Account.getAccount(BlockDb.findBlockAtHeight(this.height - i - 1).getGeneratorId());
-                Logger.logDebugMessage("Back fees %f XEL to forger at height %d", ((double)backFees[i])/Constants.ONE_NXT, this.height - i - 1);
+                Logger.logDebugMessage("Back fees %f %s to forger at height %d", ((double)backFees[i])/Constants.ONE_NXT, Constants.COIN_SYMBOL, this.height - i - 1);
                 previousGeneratorAccount.addToBalanceAndUnconfirmedBalanceNQT(LedgerEvent.BLOCK_GENERATED, getId(), backFees[i]);
                 previousGeneratorAccount.addToForgedBalanceNQT(backFees[i]);
             }
         }
         if (totalBackFees != 0) {
-            Logger.logDebugMessage("Fee reduced by %f XEL at height %d", ((double)totalBackFees)/Constants.ONE_NXT, this.height);
+            Logger.logDebugMessage("Fee reduced by %f %s at height %d", ((double)totalBackFees)/Constants.ONE_NXT, Constants.COIN_SYMBOL, this.height);
         }
         generatorAccount.addToBalanceAndUnconfirmedBalanceNQT(LedgerEvent.BLOCK_GENERATED, getId(), totalFeeNQT - totalBackFees);
         generatorAccount.addToForgedBalanceNQT(totalFeeNQT - totalBackFees);

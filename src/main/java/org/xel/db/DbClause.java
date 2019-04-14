@@ -68,7 +68,7 @@ public abstract class DbClause {
         }
 
         @Override
-        protected int set(PreparedStatement pstmt, int index) throws SQLException {
+        protected int set(PreparedStatement pstmt, int index) {
             return index;
         }
 
@@ -81,7 +81,7 @@ public abstract class DbClause {
         }
 
         @Override
-        protected int set(PreparedStatement pstmt, int index) throws SQLException {
+        protected int set(PreparedStatement pstmt, int index) {
             return index;
         }
 
@@ -94,7 +94,7 @@ public abstract class DbClause {
         }
 
         @Override
-        protected int set(PreparedStatement pstmt, int index) throws SQLException {
+        protected int set(PreparedStatement pstmt, int index) {
             return index;
         }
 

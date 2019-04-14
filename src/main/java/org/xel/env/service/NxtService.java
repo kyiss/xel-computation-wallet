@@ -14,18 +14,11 @@
  *
  */
 
-package org.xel.env;
+package org.xel.env.service;
 
-import org.xel.Nxt;
+public class NxtService {
 
-import java.nio.file.Paths;
-
-public class UnixUserDirProvider extends DesktopUserDirProvider {
-
-    private static final String NXT_USER_HOME = Paths.get(System.getProperty("user.home"), "." + Nxt.APPLICATION.toLowerCase()).toString();
-
-    @Override
-    public String getUserHomeDir() {
-        return NXT_USER_HOME;
+    public static void main(String[] args) {
+        NxtService_ServiceManagement.serviceInit();
     }
 }

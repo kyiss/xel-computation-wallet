@@ -31,11 +31,7 @@ import org.xel.user.Users;
 import org.xel.util.*;
 import org.json.simple.JSONObject;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.net.URI;
 import java.nio.file.Files;
@@ -56,8 +52,8 @@ public final class Nxt {
     private static volatile Time time = new Time.EpochTime();
 
     public static final String NXT_DEFAULT_PROPERTIES = "nxt-default.properties";
-    public static final String NXT_DEFAULT_JUNIT_PROPERTIES = "nxt-junit-default.properties";
     public static final String NXT_PROPERTIES = "nxt.properties";
+    public static final String NXT_INSTALLER_PROPERTIES = "nxt-installer.properties";
     public static final String CONFIG_DIR = "conf";
     public static final String NXT_DEFAULT_TESTVM_PROPERTIES = "testvm.properties";
 
@@ -68,20 +64,15 @@ public final class Nxt {
     static {
         redirectSystemStreams("out");
         redirectSystemStreams("err");
-        System.out.println("Initializing XEL server version " + Nxt.VERSION);
+        System.out.println("Initializing " + Nxt.APPLICATION + " server version " + Nxt.VERSION);
         printCommandLineArguments();
         runtimeMode = RuntimeEnvironment.getRuntimeMode();
         System.out.printf("Runtime mode %s\n", runtimeMode.getClass().getName());
         dirProvider = RuntimeEnvironment.getDirProvider();
         System.out.println("User home folder " + dirProvider.getUserHomeDir());
-        if (JUnitEnvironment.isJUnitTest()) {
-            loadProperties(defaultProperties, NXT_DEFAULT_JUNIT_PROPERTIES, true);
-        } else {
-            loadProperties(defaultProperties, NXT_DEFAULT_PROPERTIES, true);
-        }
-
+        loadProperties(defaultProperties, NXT_DEFAULT_PROPERTIES, true);
         if (!VERSION.equals(Nxt.defaultProperties.getProperty("nxt.version"))) {
-            throw new RuntimeException("Using an nxt-default.properties file from a version other than " + VERSION + " (you provided " + Nxt.defaultProperties.getProperty("nxt.version") + ") is not supported!!!");
+            throw new RuntimeException("Using an nxt-default.properties file from a version other than " + VERSION + " is not supported!!!");
         }
     }
 
@@ -118,10 +109,11 @@ public final class Nxt {
     private static final Properties properties = new Properties(defaultProperties);
 
     static {
+        loadProperties(properties, NXT_INSTALLER_PROPERTIES, true);
         loadProperties(properties, NXT_PROPERTIES, false);
     }
 
-    public static Properties loadProperties(Properties properties, String propertiesFile, boolean isDefault) {
+    public static void loadProperties(Properties properties, String propertiesFile, boolean isDefault) {
         try {
             // Load properties from location specified as command line parameter
             String configFile = System.getProperty(propertiesFile);
@@ -129,7 +121,6 @@ public final class Nxt {
                 System.out.printf("Loading %s from %s\n", propertiesFile, configFile);
                 try (InputStream fis = new FileInputStream(configFile)) {
                     properties.load(fis);
-                    return properties;
                 } catch (IOException e) {
                     throw new IllegalArgumentException(String.format("Error loading %s from %s", propertiesFile, configFile));
                 }
@@ -141,19 +132,19 @@ public final class Nxt {
                         System.out.printf("Loading %s from classpath\n", propertiesFile);
                         properties.load(is);
                         if (isDefault) {
-                            return properties;
+                            return;
                         }
                     }
                     // load non-default properties files from the user folder
                     if (!dirProvider.isLoadPropertyFileFromUserDir()) {
-                        return properties;
+                        return;
                     }
                     String homeDir = dirProvider.getUserHomeDir();
                     if (!Files.isReadable(Paths.get(homeDir))) {
                         System.out.printf("Creating dir %s\n", homeDir);
                         try {
                             Files.createDirectory(Paths.get(homeDir));
-                        } catch (Exception e) {
+                        } catch(Exception e) {
                             if (!(e instanceof NoSuchFileException)) {
                                 throw e;
                             }
@@ -176,12 +167,11 @@ public final class Nxt {
                         Files.createFile(propPath);
                         Files.write(propPath, Convert.toBytes("# use this file for workstation specific " + propertiesFile));
                     }
-                    return properties;
                 } catch (IOException e) {
                     throw new IllegalArgumentException("Error loading " + propertiesFile, e);
                 }
             }
-        } catch (IllegalArgumentException e) {
+        } catch(IllegalArgumentException e) {
             e.printStackTrace(); // make sure we log this exception
             throw e;
         }
@@ -225,13 +215,24 @@ public final class Nxt {
     }
 
     public static String getStringProperty(String name, String defaultValue, boolean doNotLog) {
+        return getStringProperty(name, defaultValue, doNotLog, null);
+    }
+
+    public static String getStringProperty(String name, String defaultValue, boolean doNotLog, String encoding) {
         String value = properties.getProperty(name);
         if (value != null && ! "".equals(value)) {
             Logger.logMessage(name + " = \"" + (doNotLog ? "{not logged}" : value) + "\"");
-            return value;
         } else {
             Logger.logMessage(name + " not defined");
-            return defaultValue;
+            value = defaultValue;
+        }
+        if (encoding == null || value == null) {
+            return value;
+        }
+        try {
+            return new String(value.getBytes("ISO-8859-1"), encoding);
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -250,17 +251,21 @@ public final class Nxt {
         return result;
     }
 
-    public static Boolean getBooleanProperty(String name) {
+    public static boolean getBooleanProperty(String name) {
+        return getBooleanProperty(name, false);
+    }
+
+    public static boolean getBooleanProperty(String name, boolean defaultValue) {
         String value = properties.getProperty(name);
         if (Boolean.TRUE.toString().equals(value)) {
-            //Logger.logMessage(name + " = \"true\"");
+            Logger.logMessage(name + " = \"true\"");
             return true;
         } else if (Boolean.FALSE.toString().equals(value)) {
-            //Logger.logMessage(name + " = \"false\"");
+            Logger.logMessage(name + " = \"false\"");
             return false;
         }
-        //Logger.logMessage(name + " not defined, assuming false");
-        return false;
+        Logger.logMessage(name + " not defined, using default " + defaultValue);
+        return defaultValue;
     }
 
     public static Blockchain getBlockchain() {
@@ -323,7 +328,7 @@ public final class Nxt {
     public static void main(String[] args) {
         try {
             System.out.println("XEL CORE / XELINE IS OPEN-SOURCE SOFTWARE RUNNING ON THE MAIN-NET BUT IS STILL CONSIDERED \"BETA\" AND MAY CONTAIN BUGS, SOME OF WHICH MAY HAVE SERIOUS CONSEQUENCES. WE THEREFORE DISCLAIM ANY LIABILITY OF ANY KIND FOR ANY DAMAGES WHATSOEVER RESULTING DIRECTLY OR INDIRECTLY FROM THE USE OF THIS SOFTWARE OR OF ANY DERIVATIVE WORK. USE THE SOFTWARE AND THE INFORMATION PRESENTED HERE AT OUR OWN RISK.");
-            Thread.sleep(2000);
+            Thread.sleep(1000);
             Runtime.getRuntime().addShutdownHook(new Thread(Nxt::shutdown));
             init();
         } catch (Throwable t) {
@@ -341,10 +346,6 @@ public final class Nxt {
         Init.init();
     }
 
-    public static boolean isInitialized() {
-        return Init.initialized;
-    }
-
     public static void shutdown() {
         Logger.logShutdownMessage("Shutting down...");
         AddOns.shutdown();
@@ -359,7 +360,7 @@ public final class Nxt {
         
         Peers.shutdown();
         Db.shutdown();
-        Logger.logShutdownMessage("Nxt server " + VERSION + " stopped.");
+        Logger.logShutdownMessage(Nxt.APPLICATION + " server " + VERSION + " stopped.");
         Logger.shutdown();
         runtimeMode.shutdown();
     }
@@ -447,15 +448,7 @@ public final class Nxt {
 				}
 
                 Logger.logMessage("Initialization took " + (currentTime - startTime) / 1000 + " seconds");
-                Logger.logMessage("XEL server " + VERSION + " started successfully.");
-
-                if(Nxt.getBooleanProperty("nxt.enableComputationEngine")) {
-                    Logger.logMessage("XEL Computation Engine is enabled");
-                }
-                else {
-                    Logger.logMessage("XEL Computation Engine is disabled");
-                }
-
+                Logger.logMessage(Nxt.APPLICATION + " server " + VERSION + " started successfully.");
                 Logger.logMessage("Copyright © 2013-2016 The Nxt Core Developers.");
                 Logger.logMessage("Copyright © 2016-2017 Jelurida IP B.V.");
                 Logger.logMessage("Copyright © 2019 XEL Development Team.");
@@ -467,7 +460,6 @@ public final class Nxt {
                 if (isDesktopApplicationEnabled()) {
                     launchDesktopApplication();
                 }
-
                 if (Constants.isTestnet) {
                     Logger.logMessage("RUNNING ON TESTNET - DO NOT USE REAL ACCOUNTS!");
                 }

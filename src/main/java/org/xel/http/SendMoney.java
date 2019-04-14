@@ -31,11 +31,6 @@ public final class SendMoney extends CreateTransaction {
     }
 
     @Override
-    protected final boolean requirePost() {
-        return false;
-    }
-
-    @Override
     protected JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
         long recipient = ParameterParser.getAccountId(req, "recipient", true);
         long amountNQT = ParameterParser.getAmountNQT(req);

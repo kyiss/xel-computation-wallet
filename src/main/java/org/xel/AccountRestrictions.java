@@ -19,6 +19,7 @@ package org.xel;
 import org.xel.Account.ControlType;
 import org.xel.NxtException.AccountControlException;
 import org.xel.VoteWeighting.VotingModel;
+import org.xel.db.DbClause;
 import org.xel.db.DbIterator;
 import org.xel.db.DbKey;
 import org.xel.db.DbUtils;

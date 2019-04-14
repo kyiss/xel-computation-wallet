@@ -66,26 +66,26 @@ public interface Block {
     byte[] getBytes();
 
     JSONObject getJSONObject();
-    
+
     long getPowTarget();
-
+	
     byte[] getGeneratorPubkeyComputational();
-
+	
     List<? extends Transaction> getTransactionsComputational();
     
     int getPowLastMass();
-
+	
     int getPowMass();
-
+	
     long getTargetLastMass();
-
+	
     long getTargetMass();
-
+	
     void calculatePowTarget(int powCounter, int min, int max);
     
     JSONObject getJSONObjectComputational();
     
     long getPreviousBlockPowTarget();
-
+	
     byte[] getBlockHash();
 }
