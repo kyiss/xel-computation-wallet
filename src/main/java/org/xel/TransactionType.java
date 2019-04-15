@@ -42,6 +42,14 @@ public abstract class TransactionType {
     private static final byte TYPE_MESSAGING = 1;
     private static final byte TYPE_ACCOUNT_CONTROL = 2;
     private static final byte TYPE_DATA = 3;
+    /*
+    private static final byte TYPE_COLORED_COINS = 2;
+    private static final byte TYPE_DIGITAL_GOODS = 3;
+    private static final byte TYPE_ACCOUNT_CONTROL = 4;
+    static final byte TYPE_MONETARY_SYSTEM = 5;
+    private static final byte TYPE_DATA = 6;
+    static final byte TYPE_SHUFFLING = 7;
+	*/
 
     private static final byte SUBTYPE_PAYMENT_ORDINARY_PAYMENT = 0;
     public static final byte SUBTYPE_PAYMENT_REDEEM = 1;
@@ -51,7 +59,19 @@ public abstract class TransactionType {
     private static final byte SUBTYPE_MESSAGING_VOTE_CASTING = 2;
     private static final byte SUBTYPE_MESSAGING_ACCOUNT_INFO = 4;
     private static final byte SUBTYPE_MESSAGING_PHASING_VOTE_CASTING = 5;
-
+	/*
+    private static final byte SUBTYPE_MESSAGING_ALIAS_ASSIGNMENT = 1;
+    private static final byte SUBTYPE_MESSAGING_POLL_CREATION = 2;
+    private static final byte SUBTYPE_MESSAGING_VOTE_CASTING = 3;
+    private static final byte SUBTYPE_MESSAGING_HUB_ANNOUNCEMENT = 4;
+    private static final byte SUBTYPE_MESSAGING_ACCOUNT_INFO = 5;
+    private static final byte SUBTYPE_MESSAGING_ALIAS_SELL = 6;
+    private static final byte SUBTYPE_MESSAGING_ALIAS_BUY = 7;
+    private static final byte SUBTYPE_MESSAGING_ALIAS_DELETE = 8;
+    private static final byte SUBTYPE_MESSAGING_PHASING_VOTE_CASTING = 9;
+    private static final byte SUBTYPE_MESSAGING_ACCOUNT_PROPERTY = 10;
+    private static final byte SUBTYPE_MESSAGING_ACCOUNT_PROPERTY_DELETE = 11;
+	*/
 
     private static final byte SUBTYPE_ACCOUNT_CONTROL_EFFECTIVE_BALANCE_LEASING = 0;
     private static final byte SUBTYPE_ACCOUNT_CONTROL_PHASING_ONLY = 1;
