@@ -460,6 +460,11 @@ public final class Nxt {
                 if (isDesktopApplicationEnabled()) {
                     launchDesktopApplication();
                 }
+
+                Logger.logMessage(Nxt.APPLICATION
+                        + " Computation Engine is "
+                        + (Nxt.getBooleanProperty("nxt.enableComputationEngine") ? "enabled" : "disabled"));
+
                 if (Constants.isTestnet) {
                     Logger.logMessage("RUNNING ON TESTNET - DO NOT USE REAL ACCOUNTS!");
                 }
