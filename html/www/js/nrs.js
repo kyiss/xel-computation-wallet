@@ -1096,6 +1096,8 @@ NRS.addPagination = function () {
 			if (response.errorCode) {
 				NRS.logConsole("Get account info error (" + response.errorCode + ") " + response.errorDescription);
 				$("#account_balance, #account_balance_sidebar, #account_currencies_balance, #account_nr_currencies, #account_purchase_count, #account_pending_sale_count, #account_completed_sale_count, #account_message_count, #account_alias_count").html("0");
+				$("#account_balance, #account_balance_sidebar").html(NRS.formatStyledAmount(0));
+
                 NRS.updateDashboardMessage();
 			} else {
 				if (NRS.accountRS && NRS.accountInfo.accountRS != NRS.accountRS) {
@@ -1340,7 +1342,7 @@ NRS.addPagination = function () {
                         if (NRS.downloadingBlockchain) {
                             message += "<br/><br/>" + NRS.blockchainDownloadingMessage();
                         }
-
+                        
                     }
                     $("#dashboard_message").addClass("alert-success").removeClass("alert-danger").html(message).show();
                 }
@@ -1689,11 +1691,11 @@ NRS.addPagination = function () {
 				});
 			}
 
-      if (!NRS.state.isLightClient && NRS.blocks && NRS.blocks.length > 0 && (NRS.blocks[0].timestamp < (NRS.toEpochTime() - (60*60))) && !NRS.isTestNet) {
-          $.growl($.t("fork_warning_base_target"), {
-              "type": "danger"
-          });
-      }
+            if (!NRS.state.isLightClient && NRS.blocks && NRS.blocks.length > 0 && (NRS.blocks[0].timestamp < (NRS.toEpochTime() - (60*60))) && !NRS.isTestNet) {
+                $.growl($.t("fork_warning_base_target"), {
+                    "type": "danger"
+                });
+            }
 		}
 	};
 
